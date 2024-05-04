@@ -1,8 +1,7 @@
-import {useState} from "react";
-import {FlatList, SafeAreaView, View} from "react-native";
-import {Appbar, Button, Dialog, IconButton, List, Portal, TextInput} from "react-native-paper";
-import {DatePickerModal, TimePickerModal} from "react-native-paper-dates";
-
+import { useState } from "react";
+import { FlatList, SafeAreaView, View } from "react-native";
+import { Appbar, Button, Dialog, IconButton, List, Portal, TextInput } from "react-native-paper";
+import { DatePickerModal, TimePickerModal } from "react-native-paper-dates";
 
 interface Task {
     id: number;
@@ -11,7 +10,7 @@ interface Task {
     dueDate: Date;
 }
 
-const TimeSetModal = ({visible, setVisible, onConfirm}) => {
+const TimeSetModal = ({ visible, setVisible, onConfirm }) => {
     return (
         <TimePickerModal
             locale='ja'
@@ -25,10 +24,10 @@ const TimeSetModal = ({visible, setVisible, onConfirm}) => {
             cancelLabel={"キャンセル"}
             confirmLabel={"OK"}
         />
-    )
-}
+    );
+};
 
-const DateSetModal = ({visible, setVisible, onConfirm}) => {
+const DateSetModal = ({ visible, setVisible, onConfirm }) => {
     return (
         <DatePickerModal
             locale='ja'
@@ -42,12 +41,11 @@ const DateSetModal = ({visible, setVisible, onConfirm}) => {
             saveLabel={"OK"}
             date={new Date()}
         />
-    )
-}
+    );
+};
 
-
-const DepositSetModal = ({visible, setVisible, onConfirm}) => {
-    const [deposit, setDeposit] = useState<number>()
+const DepositSetModal = ({ visible, setVisible, onConfirm }) => {
+    const [deposit, setDeposit] = useState<number>();
     return (
         <Portal>
             <Dialog visible={visible} onDismiss={() => setVisible(false)}>
@@ -58,21 +56,19 @@ const DepositSetModal = ({visible, setVisible, onConfirm}) => {
                         value={deposit ? deposit.toLocaleString() : ""}
                         inputMode={"numeric"}
                         onChangeText={(text) => setDeposit(text ? parseInt(text.replaceAll(",", "")) : undefined)}
-                        left={<TextInput.Icon icon={"currency-jpy"}/>}
+                        left={<TextInput.Icon icon={"currency-jpy"} />}
                     />
                 </Dialog.Content>
                 <Dialog.Actions>
                     <Button onPress={() => setVisible(false)}>キャンセル</Button>
-                    <Button onPress={onConfirm}>決定</Button>
+                    <Button onPress={() => { onConfirm(deposit); setVisible(false); }}>決定</Button>
                 </Dialog.Actions>
             </Dialog>
         </Portal>
-    )
+    );
+};
 
-}
-
-
-const Screen = ({navigation}) => {
+const Screen = ({ navigation }) => {
     const [task, setTask] = useState<Task>();
     const [tasks, setTasks] = useState<Task[]>([]);
     const [timeModalVisible, setTimeModalVisible] = useState(false);
@@ -84,40 +80,41 @@ const Screen = ({navigation}) => {
     }
 
     function setDueTime(params: any) {
-        console.log(params)
-        console.log(task)
-        const _task = {...task}
-        // params: {"hours": 1, "minutes": 24}
-        const date = new Date(task.dueDate);
-        date.setHours(params.hours)
-        date.setMinutes(params.minutes)
-        _task.dueDate = date
-        setTask(_task)
-        setTimeModalVisible(false)
-        setDepositModalVisible(true)
+        setTask((currentTask) => {
+            const updatedTask = { ...currentTask };
+            const date = new Date(currentTask.dueDate);
+            date.setHours(params.hours);
+            date.setMinutes(params.minutes);
+            updatedTask.dueDate = date;
+            return updatedTask;
+        });
+        setTimeModalVisible(false);
+        setDepositModalVisible(true);
     }
 
     function setDueDate(date: Date) {
-        const _task = {...task}
-        _task.dueDate = date
-        setTask(_task)
-        setDateModalVisible(false)
-        setTimeModalVisible(true)
-        console.log(task)
+        setTask((currentTask) => {
+            const updatedTask = { ...currentTask };
+            updatedTask.dueDate = date;
+            return updatedTask;
+        });
+        setDateModalVisible(false);
+        setTimeModalVisible(true);
     }
 
     function setDeposit(deposit: number) {
-        const _task = {...task}
-        console.log(_task)
-        _task.deposit = deposit
-        setTasks([...tasks, _task])
-        setTask(null)
-        setDepositModalVisible(false)
+        setTask((currentTask) => {
+            const updatedTask = { ...currentTask };
+            updatedTask.deposit = deposit;
+            setTasks((prevTasks) => [...prevTasks, updatedTask]);
+            return null;
+        });
+        setDepositModalVisible(false);
     }
 
     const addTask = () => {
         if (task) {
-            setDateModalVisible(true)
+            setDateModalVisible(true);
         }
     };
 
@@ -128,35 +125,33 @@ const Screen = ({navigation}) => {
     return (
         <SafeAreaView>
             <Appbar.Header>
-                <Appbar.Action icon="menu" onPress={() => navigation.openDrawer()}/>
-                <Appbar.Content title="ToDo App"/>
+                <Appbar.Action icon="menu" onPress={() => navigation.openDrawer()} />
+                <Appbar.Content title="ToDo App" />
             </Appbar.Header>
-            <View style={{padding: 20}}>
+            <View style={{ padding: 20 }}>
                 <TextInput
                     label="タスクを追加"
                     value={task?.name}
                     onChangeText={onTextChange}
-                    right={<TextInput.Icon icon={"plus"} onPress={addTask}/>}
+                    right={<TextInput.Icon icon={"plus"} onPress={addTask} />}
                 />
                 <FlatList
-                    style={{marginTop: 20}}
+                    style={{ marginTop: 20 }}
                     data={tasks}
                     keyExtractor={item => item.id.toString()}
-                    renderItem={
-                        ({ item }) => (
-                            <List.Item
-                                key={item.id.toString()}
-                                title={item.name}
-                                description={`${item.dueDate?.toLocaleString()} ･ ${item.deposit?.toLocaleString()}円`}
-                                right={props => <IconButton {...props} icon="delete" onPress={() => deleteTask(item.id)}/>}
-                            />
-                        )
-                    }
+                    renderItem={({ item }) => (
+                        <List.Item
+                            key={item.id.toString()}
+                            title={item.name}
+                            description={`${item.dueDate?.toLocaleString()} ･ ${item.deposit?.toLocaleString()}円`}
+                            right={props => <IconButton {...props} icon="delete" onPress={() => deleteTask(item.id)} />}
+                        />
+                    )}
                 />
             </View>
-            <DateSetModal visible={dateModalVisible} setVisible={setDateModalVisible} onConfirm={setDueDate}/>
-            <TimeSetModal visible={timeModalVisible} setVisible={setTimeModalVisible} onConfirm={setDueTime}/>
-            <DepositSetModal visible={depositModalVisible} setVisible={setDepositModalVisible} onConfirm={setDeposit}/>
+            <DateSetModal visible={dateModalVisible} setVisible={setDateModalVisible} onConfirm={setDueDate} />
+            <TimeSetModal visible={timeModalVisible} setVisible={setTimeModalVisible} onConfirm={setDueTime} />
+            <DepositSetModal visible={depositModalVisible} setVisible={setDepositModalVisible} onConfirm={setDeposit} />
         </SafeAreaView>
     );
 };
