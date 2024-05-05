@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { FlatList, SafeAreaView, View } from "react-native";
-import { Appbar, Button, Dialog, IconButton, List, Portal, TextInput } from "react-native-paper";
+import {useState} from "react";
+import {FlatList, SafeAreaView, ScrollView, View} from "react-native";
+import {Appbar, Button, Chip, Dialog, IconButton, List, Portal, TextInput} from "react-native-paper";
 import { DatePickerModal, TimePickerModal } from "react-native-paper-dates";
 
 interface Task {
@@ -9,6 +9,64 @@ interface Task {
     deposit: number;
     dueDate: Date;
 }
+
+
+const TopAppBar = ({navigation}) => (
+    <Appbar.Header>
+        <Appbar.Action icon="menu" onPress={() => navigation.openDrawer()} />
+        <Appbar.Content title="Finey" />
+    </Appbar.Header>
+)
+
+const TaskList = ({ tasks, deleteTask }) => {
+    // Group tasks by due date
+    const groupedTasks = tasks.reduce((groups, task) => {
+        const date = task.dueDate.toISOString().split('T')[0]; // Get the date part of the timestamp
+        if (!groups[date]) {
+            groups[date] = [];
+        }
+        groups[date].push(task);
+        return groups;
+    }, {});
+
+    // Convert the groups object to an array of sections
+    const sections = Object.keys(groupedTasks).map(date => ({
+        title: `${new Date(date).getMonth()}月${new Date(date).getDate()}日(${["日", "月", "火", "水", "木", "金", "土"][new Date(date).getDay()]})`,
+        data: groupedTasks[date].sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime()) // Sort tasks by time within each group
+    }));
+
+    return (
+        <ScrollView style={{flex: 1, paddingTop: 5}}>
+            {sections.map((section, index) => (
+                <List.Section
+                    key={index}
+                >
+                    <List.Subheader>{section.title}</List.Subheader>
+                    {/*  don't use FlatList  */}
+                    {section.data.map((task: Task, index: number) => {
+                        const Description = () => (
+                            <View style={{flexDirection: "row", width: "70%"}}>
+                                <Chip style={{marginHorizontal: 3, marginVertical: 3}} icon="alarm" mode={"outlined"}>{task.dueDate?.toLocaleTimeString([], {hour: "numeric", minute: "numeric"})}</Chip>
+                                <Chip style={{marginHorizontal: 3, marginVertical: 3}} icon="currency-jpy" mode={"outlined"}>{task.deposit?.toLocaleString()}</Chip>
+                            </View>
+                        )
+                        return (
+                            <List.Item
+                                key={index}
+                                title={task.name}
+                                titleStyle={{marginLeft: 5, marginBottom: 5}}
+                                description={Description}
+                                right={props => <IconButton {...props} icon="delete"
+                                                            onPress={() => deleteTask(task.id)}/>}
+                            />
+                        )
+                    })}
+                </List.Section>
+            ))}
+        </ScrollView>
+    );
+};
+
 
 const TimeSetModal = ({ visible, setVisible, onConfirm }) => {
     return (
@@ -61,7 +119,7 @@ const DepositSetModal = ({ visible, setVisible, onConfirm }) => {
                 </Dialog.Content>
                 <Dialog.Actions>
                     <Button onPress={() => setVisible(false)}>キャンセル</Button>
-                    <Button onPress={() => { onConfirm(deposit); setVisible(false); }}>決定</Button>
+                    <Button onPress={() => { onConfirm(deposit); setVisible(false); }} disabled={!Boolean(deposit)}>決定</Button>
                 </Dialog.Actions>
             </Dialog>
         </Portal>
@@ -92,7 +150,7 @@ const Screen = ({ navigation }) => {
         setDepositModalVisible(true);
     }
 
-    function setDueDate(date: Date) {
+    function setDueDate({date}: {date: Date}) {
         setTask((currentTask) => {
             const updatedTask = { ...currentTask };
             updatedTask.dueDate = date;
@@ -113,7 +171,7 @@ const Screen = ({ navigation }) => {
     }
 
     const addTask = () => {
-        if (task) {
+        if (task?.name) {
             setDateModalVisible(true);
         }
     };
@@ -123,35 +181,20 @@ const Screen = ({ navigation }) => {
     };
 
     return (
-        <SafeAreaView>
-            <Appbar.Header>
-                <Appbar.Action icon="menu" onPress={() => navigation.openDrawer()} />
-                <Appbar.Content title="ToDo App" />
-            </Appbar.Header>
-            <View style={{ padding: 20 }}>
+        <SafeAreaView style={{flex: 1}}>
+            <TopAppBar navigation={navigation} />
+            <View style={{flex: 1, padding: 20}}>
                 <TextInput
                     label="タスクを追加"
-                    value={task?.name}
+                    value={task?.name || ""}
                     onChangeText={onTextChange}
                     right={<TextInput.Icon icon={"plus"} onPress={addTask} />}
                 />
-                <FlatList
-                    style={{ marginTop: 20 }}
-                    data={tasks}
-                    keyExtractor={item => item.id.toString()}
-                    renderItem={({ item }) => (
-                        <List.Item
-                            key={item.id.toString()}
-                            title={item.name}
-                            description={`${item.dueDate?.toLocaleString()} ･ ${item.deposit?.toLocaleString()}円`}
-                            right={props => <IconButton {...props} icon="delete" onPress={() => deleteTask(item.id)} />}
-                        />
-                    )}
-                />
+                <TaskList tasks={tasks} deleteTask={deleteTask} />
             </View>
             <DateSetModal visible={dateModalVisible} setVisible={setDateModalVisible} onConfirm={setDueDate} />
-            <TimeSetModal visible={timeModalVisible} setVisible={setTimeModalVisible} onConfirm={setDueTime} />
-            <DepositSetModal visible={depositModalVisible} setVisible={setDepositModalVisible} onConfirm={setDeposit} />
+            {timeModalVisible && <TimeSetModal visible={timeModalVisible} setVisible={setTimeModalVisible} onConfirm={setDueTime} />}
+            {depositModalVisible && <DepositSetModal visible={depositModalVisible} setVisible={setDepositModalVisible} onConfirm={setDeposit} />}
         </SafeAreaView>
     );
 };
