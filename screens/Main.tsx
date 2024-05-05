@@ -1,7 +1,8 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {SafeAreaView, ScrollView, View} from "react-native";
 import {Appbar, Button, Chip, Dialog, IconButton, List, Portal, TextInput} from "react-native-paper";
 import {DatePickerModal, TimePickerModal} from "react-native-paper-dates";
+import {getData, storeData} from "../utils/localStorage";
 
 interface Task {
     id: number;
@@ -133,6 +134,20 @@ const Screen = ({ navigation }) => {
     const [dateModalVisible, setDateModalVisible] = useState(false);
     const [depositModalVisible, setDepositModalVisible] = useState(false);
 
+    useEffect(() => {
+        getData("tasks").then((tasks) => {
+            console.log(tasks)
+            if (tasks) {
+                // convert dueDate to Date object
+                tasks = tasks.map((task: Task) => {
+                    task.dueDate = new Date(task.dueDate);
+                    return task;
+                });
+                setTasks(tasks);
+            }
+        })
+    }, []);
+
     function onTextChange(text: string) {
         setTask({ id: tasks.length, name: text, deposit: 0, dueDate: new Date() });
     }
@@ -164,20 +179,29 @@ const Screen = ({ navigation }) => {
         setTask((currentTask) => {
             const updatedTask = { ...currentTask };
             updatedTask.deposit = deposit;
-            setTasks((prevTasks) => [...prevTasks, updatedTask]);
+            addTask(updatedTask);
             return null;
         });
         setDepositModalVisible(false);
     }
 
-    const addTask = () => {
+    const addBtnPressed = () => {
         if (task?.name) {
             setDateModalVisible(true);
         }
     };
 
+    const addTask = (task) => {
+        setTasks((prevTasks) => {
+            storeData("tasks", [...prevTasks, task]).then(r => console.log("stored"));
+            return [...prevTasks, task]
+        });
+    }
+
     const deleteTask = (id: number) => {
-        setTasks(tasks.filter(t => t.id !== id));
+        const newTasks = tasks.filter(t => t.id !== id)
+        setTasks(newTasks);
+        storeData("tasks", newTasks).then(r => console.log("stored"));
     };
 
     return (
@@ -188,7 +212,7 @@ const Screen = ({ navigation }) => {
                     label="タスクを追加"
                     value={task?.name || ""}
                     onChangeText={onTextChange}
-                    right={<TextInput.Icon icon={"plus"} onPress={addTask} />}
+                    right={<TextInput.Icon icon={"plus"} onPress={addBtnPressed}/>}
                 />
                 <TaskList tasks={tasks} deleteTask={deleteTask} />
             </View>
