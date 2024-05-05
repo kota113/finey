@@ -3,7 +3,7 @@ import {SafeAreaView, ScrollView, View} from "react-native";
 import {Appbar, Button, Chip, Dialog, IconButton, List, Portal, TextInput} from "react-native-paper";
 import {DatePickerModal, TimePickerModal} from "react-native-paper-dates";
 import {getData, storeData} from "../utils/localStorage";
-import {cancelNotification, scheduleNotification} from "../utils/notifications";
+import * as Notifications from "expo-notifications";
 
 interface Task {
     id: number;
@@ -201,9 +201,12 @@ const Screen = ({ navigation }) => {
 
     const addTask = (task) => {
         setTasks((prevTasks) => {
-            scheduleNotification(task.name, task.dueDate).then(() => console.log("scheduled")).then((id) => {
-                task.notificationId = id;
-            })
+            Notifications.scheduleNotificationAsync({
+                content: {title: task.name},
+                trigger: task.dueDate,
+            }).then((id: string) =>
+                task.notificationId = id
+            );
             storeData("tasks", [...prevTasks, task]).then(() => console.log("stored"));
             return [...prevTasks, task]
         });
@@ -211,7 +214,7 @@ const Screen = ({ navigation }) => {
 
     const deleteTask = (task: Task) => {
         const newTasks = tasks.filter(t => t.id !== task.id)
-        cancelNotification(task.notificationId).then(() => console.log("cancelled"));
+        if (!task.isCompleted) Notifications.cancelScheduledNotificationAsync(task.notificationId).then(() => console.log("cancelled"));
         setTasks(newTasks);
         storeData("tasks", newTasks).then(() => console.log("stored"));
     };

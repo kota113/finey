@@ -27,6 +27,15 @@ registerTranslation('ja', {
     hour: '時'
 })
 
+Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+    }),
+});
+
+
 const Drawer = createDrawerNavigator();
 
 interface DrawerItem {
