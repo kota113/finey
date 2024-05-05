@@ -1,9 +1,9 @@
 import Main from "./Main";
-import { createDrawerNavigator } from '@react-navigation/drawer';
-import { Drawer as PaperDrawer } from "react-native-paper";
-import {useState} from "react";
-import {View, StyleSheet, FlatList} from "react-native";
+import {createDrawerNavigator} from '@react-navigation/drawer';
+import {Drawer as PaperDrawer} from "react-native-paper";
+import {FlatList, SafeAreaView, StyleSheet} from "react-native";
 import {registerTranslation} from "react-native-paper-dates";
+import * as Notifications from "expo-notifications";
 
 
 registerTranslation('ja', {
@@ -61,7 +61,7 @@ const DrawerContent = ({ navigation }) => {
         navigation.navigate(screen)
     }
     return (
-        <View style={styles.drawerContainer}>
+        <SafeAreaView style={styles.drawerContainer}>
             <FlatList
                 data={DrawerItems}
                 keyExtractor={(item) => item.label}
@@ -75,7 +75,7 @@ const DrawerContent = ({ navigation }) => {
                     )
                 }
             />
-        </View>
+        </SafeAreaView>
     )
 }
 
