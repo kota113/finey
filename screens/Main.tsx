@@ -31,10 +31,16 @@ const TaskList = ({ tasks, deleteTask }) => {
     }, {});
 
     // Convert the groups object to an array of sections
-    const sections = Object.keys(groupedTasks).map(date => ({
+    let sections = Object.keys(groupedTasks).map(date => ({
         title: `${new Date(date).getMonth()}月${new Date(date).getDate()}日(${["日", "月", "火", "水", "木", "金", "土"][new Date(date).getDay()]})`,
         data: groupedTasks[date].sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime()) // Sort tasks by time within each group
     }));
+
+    sections = sections.sort((a, b) => {
+        const dateA = new Date(a.title);
+        const dateB = new Date(b.title);
+        return dateA.getTime() - dateB.getTime();
+    });
 
     return (
         <ScrollView style={{flex: 1, paddingTop: 5}}>
@@ -193,7 +199,7 @@ const Screen = ({ navigation }) => {
 
     const addTask = (task) => {
         setTasks((prevTasks) => {
-            storeData("tasks", [...prevTasks, task]).then(r => console.log("stored"));
+            storeData("tasks", [...prevTasks, task]).then(() => console.log("stored"));
             return [...prevTasks, task]
         });
     }
@@ -201,7 +207,7 @@ const Screen = ({ navigation }) => {
     const deleteTask = (id: number) => {
         const newTasks = tasks.filter(t => t.id !== id)
         setTasks(newTasks);
-        storeData("tasks", newTasks).then(r => console.log("stored"));
+        storeData("tasks", newTasks).then(() => console.log("stored"));
     };
 
     return (
