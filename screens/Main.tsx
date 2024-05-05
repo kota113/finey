@@ -3,12 +3,14 @@ import {SafeAreaView, ScrollView, View} from "react-native";
 import {Appbar, Button, Chip, Dialog, IconButton, List, Portal, TextInput} from "react-native-paper";
 import {DatePickerModal, TimePickerModal} from "react-native-paper-dates";
 import {getData, storeData} from "../utils/localStorage";
+import {cancelNotification, scheduleNotification} from "../utils/notifications";
 
 interface Task {
     id: number;
     name: string;
     deposit: number;
     dueDate: Date;
+    notificationId: string;
 }
 
 
@@ -64,7 +66,7 @@ const TaskList = ({ tasks, deleteTask }) => {
                                 titleStyle={{marginLeft: 5, marginBottom: 5}}
                                 description={Description}
                                 right={props => <IconButton {...props} icon="delete"
-                                                            onPress={() => deleteTask(task.id)}/>}
+                                                            onPress={() => deleteTask(task)}/>}
                             />
                         )
                     })}
@@ -155,7 +157,7 @@ const Screen = ({ navigation }) => {
     }, []);
 
     function onTextChange(text: string) {
-        setTask({ id: tasks.length, name: text, deposit: 0, dueDate: new Date() });
+        setTask({id: tasks.length, name: text, deposit: 0, dueDate: new Date(), notificationId: ""});
     }
 
     function setDueTime(params: any) {
@@ -199,13 +201,17 @@ const Screen = ({ navigation }) => {
 
     const addTask = (task) => {
         setTasks((prevTasks) => {
+            scheduleNotification(task.name, task.dueDate).then(() => console.log("scheduled")).then((id) => {
+                task.notificationId = id;
+            })
             storeData("tasks", [...prevTasks, task]).then(() => console.log("stored"));
             return [...prevTasks, task]
         });
     }
 
-    const deleteTask = (id: number) => {
-        const newTasks = tasks.filter(t => t.id !== id)
+    const deleteTask = (task: Task) => {
+        const newTasks = tasks.filter(t => t.id !== task.id)
+        cancelNotification(task.notificationId).then(() => console.log("cancelled"));
         setTasks(newTasks);
         storeData("tasks", newTasks).then(() => console.log("stored"));
     };
