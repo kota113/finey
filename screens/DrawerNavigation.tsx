@@ -40,24 +40,25 @@ const Drawer = createDrawerNavigator();
 
 interface DrawerItem {
     label: string,
-    screen: string
+    screen: string,
+    icon: string
 }
 
 
 const DrawerContent = ({ navigation }) => {
-    const [active, setActive] = useState('first')
     const DrawerItems: DrawerItem[] = [
         {
-            label: 'First Item',
-            screen: 'first'
+            label: '支払い',
+            screen: 'payment',
+            icon: 'credit-card'
         },
         {
-            label: 'Second Item',
-            screen: 'second'
+            label: '設定',
+            screen: 'settings',
+            icon: 'cog-outline'
         }
     ]
     function onItemPress(screen: string) {
-        setActive(screen)
         navigation.navigate(screen)
     }
     return (
@@ -68,8 +69,8 @@ const DrawerContent = ({ navigation }) => {
                 renderItem={
                     ({ item }) => (
                         <PaperDrawer.Item
+                            icon={item.icon}
                             label={item.label}
-                            active={active === item.screen}
                             onPress={onItemPress.bind(this, item.screen)}
                         />
                     )
@@ -79,7 +80,7 @@ const DrawerContent = ({ navigation }) => {
     )
 }
 
-const AppDrawer = ({ navigation }) => {
+const AppDrawer = () => {
     return (
         <Drawer.Navigator
             initialRouteName="Feed"

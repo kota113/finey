@@ -8,6 +8,7 @@ import * as Notifications from "expo-notifications";
 interface Task {
     id: number;
     name: string;
+    isCompleted: boolean;
     deposit: number;
     dueDate: Date;
     notificationId: string;
@@ -21,9 +22,62 @@ const TopAppBar = ({navigation}) => (
     </Appbar.Header>
 )
 
-const TaskList = ({ tasks, deleteTask }) => {
+
+const TaskListItem = ({index, task, deleteTask, markTaskComplete, markTaskIncomplete}) => {
+    const [leftIcon, setLeftIcon] = useState(task.isCompleted ? "checkbox-marked-circle-outline" : "checkbox-blank-circle-outline");
+    const Description = () => (
+        <View style={{flexDirection: "row", width: "70%"}}>
+            <Chip
+                style={{marginHorizontal: 3, marginVertical: 3}}
+                icon="alarm"
+                mode={"outlined"}
+                disabled={task.isCompleted}
+            >
+                {!task.isCompleted ?
+                    task.dueDate?.toLocaleTimeString([], {hour: "numeric", minute: "numeric"})
+                    :
+                    task.dueDate?.toLocaleString(["ja"], {
+                        month: "numeric",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "numeric"
+                    })
+                }
+            </Chip>
+            <Chip style={{marginHorizontal: 3, marginVertical: 3}} icon="currency-jpy" mode={"outlined"}
+                  disabled={task.isCompleted}>{task.deposit?.toLocaleString()}</Chip>
+        </View>
+    )
+
+    function onCheckPress() {
+        setLeftIcon(task.isCompleted ? "checkbox-blank-circle-outline" : "checkbox-marked-circle-outline");
+        setTimeout(() => {
+            task.isCompleted ? markTaskIncomplete(task) : markTaskComplete(task);
+        }, 150);
+    }
+
+    return (
+        <List.Item
+            key={index}
+            title={task.name}
+            titleStyle={{marginLeft: 5, marginBottom: 5}}
+            description={Description}
+            right={props => <IconButton {...props} icon="delete"
+                                        onPress={() => deleteTask(task)}/>}
+            left={props => <IconButton {...props} icon={leftIcon}
+                                       onPress={onCheckPress}/>}
+        />
+    )
+}
+
+
+const TaskList = ({tasks, deleteTask, markTaskComplete, markTaskIncomplete}) => {
+    // Filter out completed tasks
+    const completedTasks = tasks.filter(task => task.isCompleted);
+
     // Group tasks by due date
     const groupedTasks = tasks.reduce((groups, task) => {
+        if (task.isCompleted) return groups; // Don't group completed tasks
         const date = task.dueDate.toISOString().split('T')[0]; // Get the date part of the timestamp
         if (!groups[date]) {
             groups[date] = [];
@@ -53,25 +107,33 @@ const TaskList = ({ tasks, deleteTask }) => {
                     <List.Subheader>{section.title}</List.Subheader>
                     {/*  don't use FlatList  */}
                     {section.data.map((task: Task, index: number) => {
-                        const Description = () => (
-                            <View style={{flexDirection: "row", width: "70%"}}>
-                                <Chip style={{marginHorizontal: 3, marginVertical: 3}} icon="alarm" mode={"outlined"}>{task.dueDate?.toLocaleTimeString([], {hour: "numeric", minute: "numeric"})}</Chip>
-                                <Chip style={{marginHorizontal: 3, marginVertical: 3}} icon="currency-jpy" mode={"outlined"}>{task.deposit?.toLocaleString()}</Chip>
-                            </View>
-                        )
                         return (
-                            <List.Item
+                            <TaskListItem
                                 key={index}
-                                title={task.name}
-                                titleStyle={{marginLeft: 5, marginBottom: 5}}
-                                description={Description}
-                                right={props => <IconButton {...props} icon="delete"
-                                                            onPress={() => deleteTask(task)}/>}
+                                index={index}
+                                task={task}
+                                deleteTask={deleteTask}
+                                markTaskComplete={markTaskComplete}
+                                markTaskIncomplete={markTaskIncomplete}
                             />
                         )
                     })}
                 </List.Section>
             ))}
+            {completedTasks.length > 0 &&
+                <List.Accordion title={"完了済み"}>
+                    {completedTasks.map((task, index) => (
+                        <TaskListItem
+                            key={index}
+                            index={index}
+                            task={task}
+                            deleteTask={deleteTask}
+                            markTaskComplete={markTaskComplete}
+                            markTaskIncomplete={markTaskIncomplete}
+                        />
+                    ))}
+                </List.Accordion>
+            }
         </ScrollView>
     );
 };
@@ -157,7 +219,14 @@ const Screen = ({ navigation }) => {
     }, []);
 
     function onTextChange(text: string) {
-        setTask({id: tasks.length, name: text, deposit: 0, dueDate: new Date(), notificationId: ""});
+        setTask({
+            id: tasks.length,
+            name: text,
+            isCompleted: false,
+            deposit: 0,
+            dueDate: new Date(),
+            notificationId: ""
+        });
     }
 
     function setDueTime(params: any) {
@@ -199,6 +268,37 @@ const Screen = ({ navigation }) => {
         }
     };
 
+    const markTaskComplete = (task: Task) => {
+        const newTasks = tasks.map(t => {
+            if (t.id === task.id) {
+                t.isCompleted = true;
+                Notifications.cancelScheduledNotificationAsync(t.notificationId).then(() => console.log("cancelled"));
+            }
+            return t;
+        });
+        setTasks(newTasks);
+        storeData("tasks", newTasks).then(() => console.log("stored"));
+    }
+
+
+    const markTaskIncomplete = (task: Task) => {
+        const newTasks = tasks.map(t => {
+            if (t.id === task.id) {
+                t.isCompleted = false;
+                Notifications.scheduleNotificationAsync({
+                    content: {title: t.name},
+                    trigger: t.dueDate,
+                }).then((id) => {
+                    t.notificationId = id;
+                })
+            }
+            return t;
+        });
+        setTasks(newTasks);
+        storeData("tasks", newTasks).then(() => console.log("stored"));
+    }
+
+
     const addTask = (task) => {
         setTasks((prevTasks) => {
             Notifications.scheduleNotificationAsync({
@@ -229,7 +329,8 @@ const Screen = ({ navigation }) => {
                     onChangeText={onTextChange}
                     right={<TextInput.Icon icon={"plus"} onPress={addBtnPressed}/>}
                 />
-                <TaskList tasks={tasks} deleteTask={deleteTask} />
+                <TaskList tasks={tasks} deleteTask={deleteTask} markTaskComplete={markTaskComplete}
+                          markTaskIncomplete={markTaskIncomplete}/>
             </View>
             <DateSetModal visible={dateModalVisible} setVisible={setDateModalVisible} onConfirm={setDueDate} />
             {timeModalVisible && <TimeSetModal visible={timeModalVisible} setVisible={setTimeModalVisible} onConfirm={setDueTime} />}
