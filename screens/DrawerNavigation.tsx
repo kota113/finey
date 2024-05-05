@@ -1,9 +1,10 @@
 import Main from "./Main";
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import {Drawer as PaperDrawer} from "react-native-paper";
-import {FlatList, SafeAreaView, StyleSheet} from "react-native";
+import {FlatList, StyleSheet, View} from "react-native";
 import {registerTranslation} from "react-native-paper-dates";
 import * as Notifications from "expo-notifications";
+import {useSafeAreaInsets} from "react-native-safe-area-context";
 
 
 registerTranslation('ja', {
@@ -38,6 +39,7 @@ Notifications.setNotificationHandler({
 
 const Drawer = createDrawerNavigator();
 
+
 interface DrawerItem {
     label: string,
     screen: string,
@@ -45,7 +47,8 @@ interface DrawerItem {
 }
 
 
-const DrawerContent = ({ navigation }) => {
+const DrawerContent = ({navigation}) => {
+    const insets = useSafeAreaInsets()
     const DrawerItems: DrawerItem[] = [
         {
             label: '支払い',
@@ -58,16 +61,22 @@ const DrawerContent = ({ navigation }) => {
             icon: 'cog-outline'
         }
     ]
+
     function onItemPress(screen: string) {
         navigation.navigate(screen)
     }
+
     return (
-        <SafeAreaView style={styles.drawerContainer}>
+        <View style={{// Paddings to handle safe area
+            paddingTop: insets.top + styles.drawerContainer.paddingTop,
+            paddingBottom: insets.bottom,
+            paddingLeft: insets.left,
+        }}>
             <FlatList
                 data={DrawerItems}
                 keyExtractor={(item) => item.label}
                 renderItem={
-                    ({ item }) => (
+                    ({item}) => (
                         <PaperDrawer.Item
                             icon={item.icon}
                             label={item.label}
@@ -76,7 +85,7 @@ const DrawerContent = ({ navigation }) => {
                     )
                 }
             />
-        </SafeAreaView>
+        </View>
     )
 }
 
@@ -89,7 +98,7 @@ const AppDrawer = () => {
             <Drawer.Screen
                 name="Feed"
                 component={Main}
-                options={{ headerShown: false }}
+                options={{headerShown: false}}
             />
         </Drawer.Navigator>
     )
