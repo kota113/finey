@@ -1,7 +1,7 @@
 import {useState} from "react";
-import {FlatList, SafeAreaView, ScrollView, View} from "react-native";
+import {SafeAreaView, ScrollView, View} from "react-native";
 import {Appbar, Button, Chip, Dialog, IconButton, List, Portal, TextInput} from "react-native-paper";
-import { DatePickerModal, TimePickerModal } from "react-native-paper-dates";
+import {DatePickerModal, TimePickerModal} from "react-native-paper-dates";
 
 interface Task {
     id: number;
