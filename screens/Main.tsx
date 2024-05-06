@@ -17,8 +17,8 @@ interface Task {
 
 const TopAppBar = ({navigation}) => (
     <Appbar.Header>
-        <Appbar.Action icon="menu" onPress={() => navigation.openDrawer()} />
-        <Appbar.Content title="Finey" />
+        <Appbar.Action icon="menu" onPress={() => navigation.openDrawer()}/>
+        <Appbar.Content title="Finey"/>
     </Appbar.Header>
 )
 
@@ -139,7 +139,7 @@ const TaskList = ({tasks, deleteTask, markTaskComplete, markTaskIncomplete}) => 
 };
 
 
-const TimeSetModal = ({ visible, setVisible, onConfirm }) => {
+const TimeSetModal = ({visible, setVisible, onConfirm}) => {
     return (
         <TimePickerModal
             locale='ja'
@@ -156,7 +156,7 @@ const TimeSetModal = ({ visible, setVisible, onConfirm }) => {
     );
 };
 
-const DateSetModal = ({ visible, setVisible, onConfirm }) => {
+const DateSetModal = ({visible, setVisible, onConfirm}) => {
     return (
         <DatePickerModal
             locale='ja'
@@ -173,7 +173,7 @@ const DateSetModal = ({ visible, setVisible, onConfirm }) => {
     );
 };
 
-const DepositSetModal = ({ visible, setVisible, onConfirm }) => {
+const DepositSetModal = ({visible, setVisible, onConfirm}) => {
     const [deposit, setDeposit] = useState<number>();
     return (
         <Portal>
@@ -185,19 +185,22 @@ const DepositSetModal = ({ visible, setVisible, onConfirm }) => {
                         value={deposit ? deposit.toLocaleString() : ""}
                         inputMode={"numeric"}
                         onChangeText={(text) => setDeposit(text ? parseInt(text.replaceAll(",", "")) : undefined)}
-                        left={<TextInput.Icon icon={"currency-jpy"} />}
+                        left={<TextInput.Icon icon={"currency-jpy"}/>}
                     />
                 </Dialog.Content>
                 <Dialog.Actions>
                     <Button onPress={() => setVisible(false)}>キャンセル</Button>
-                    <Button onPress={() => { onConfirm(deposit); setVisible(false); }} disabled={!Boolean(deposit)}>決定</Button>
+                    <Button onPress={() => {
+                        onConfirm(deposit);
+                        setVisible(false);
+                    }} disabled={!Boolean(deposit)}>決定</Button>
                 </Dialog.Actions>
             </Dialog>
         </Portal>
     );
 };
 
-const Screen = ({ navigation }) => {
+const Screen = ({navigation}) => {
     const [task, setTask] = useState<Task>();
     const [tasks, setTasks] = useState<Task[]>([]);
     const [timeModalVisible, setTimeModalVisible] = useState(false);
@@ -231,7 +234,7 @@ const Screen = ({ navigation }) => {
 
     function setDueTime(params: any) {
         setTask((currentTask) => {
-            const updatedTask = { ...currentTask };
+            const updatedTask = {...currentTask};
             const date = new Date(currentTask.dueDate);
             date.setHours(params.hours);
             date.setMinutes(params.minutes);
@@ -242,9 +245,9 @@ const Screen = ({ navigation }) => {
         setDepositModalVisible(true);
     }
 
-    function setDueDate({date}: {date: Date}) {
+    function setDueDate({date}: { date: Date }) {
         setTask((currentTask) => {
-            const updatedTask = { ...currentTask };
+            const updatedTask = {...currentTask};
             updatedTask.dueDate = date;
             return updatedTask;
         });
@@ -254,7 +257,7 @@ const Screen = ({ navigation }) => {
 
     function setDeposit(deposit: number) {
         setTask((currentTask) => {
-            const updatedTask = { ...currentTask };
+            const updatedTask = {...currentTask};
             updatedTask.deposit = deposit;
             addTask(updatedTask);
             return null;
@@ -321,7 +324,7 @@ const Screen = ({ navigation }) => {
 
     return (
         <SafeAreaView style={{flex: 1}}>
-            <TopAppBar navigation={navigation} />
+            <TopAppBar navigation={navigation}/>
             <View style={{flex: 1, padding: 20}}>
                 <TextInput
                     label="タスクを追加"
@@ -332,11 +335,26 @@ const Screen = ({ navigation }) => {
                 <TaskList tasks={tasks} deleteTask={deleteTask} markTaskComplete={markTaskComplete}
                           markTaskIncomplete={markTaskIncomplete}/>
             </View>
-            <DateSetModal visible={dateModalVisible} setVisible={setDateModalVisible} onConfirm={setDueDate} />
-            {timeModalVisible && <TimeSetModal visible={timeModalVisible} setVisible={setTimeModalVisible} onConfirm={setDueTime} />}
-            {depositModalVisible && <DepositSetModal visible={depositModalVisible} setVisible={setDepositModalVisible} onConfirm={setDeposit} />}
+            <DateSetModal visible={dateModalVisible} setVisible={setDateModalVisible} onConfirm={setDueDate}/>
+            {timeModalVisible &&
+                <TimeSetModal visible={timeModalVisible} setVisible={setTimeModalVisible} onConfirm={setDueTime}/>}
+            {depositModalVisible && <DepositSetModal visible={depositModalVisible} setVisible={setDepositModalVisible}
+                                                     onConfirm={setDeposit}/>}
         </SafeAreaView>
     );
 };
 
-export default Screen;
+export default ({navigation}) => {
+    getData("user").then((user) => {
+        if (!user) {
+            navigation.reset({
+                index: 0,
+                routes: [{name: 'Setup'}]
+            })
+        }
+    });
+
+    return (
+        <Screen navigation={navigation}/>
+    );
+};

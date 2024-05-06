@@ -5,6 +5,7 @@ import {FlatList, StyleSheet, View} from "react-native";
 import {registerTranslation} from "react-native-paper-dates";
 import * as Notifications from "expo-notifications";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
+import * as WebBrowser from 'expo-web-browser';
 
 
 registerTranslation('ja', {
@@ -42,8 +43,9 @@ const Drawer = createDrawerNavigator();
 
 interface DrawerItem {
     label: string,
-    screen: string,
-    icon: string
+    screen?: string,
+    onPress?: () => void,
+    icon: string,
 }
 
 
@@ -51,19 +53,25 @@ const DrawerContent = ({navigation}) => {
     const insets = useSafeAreaInsets()
     const DrawerItems: DrawerItem[] = [
         {
-            label: '支払い',
-            screen: 'payment',
+            label: 'お支払い',
+            onPress: () => WebBrowser.openBrowserAsync('https://expo.dev'),
             icon: 'credit-card'
         },
         {
             label: '設定',
-            screen: 'settings',
+            screen: 'Settings',
             icon: 'cog-outline'
+        },
+        {
+            label: 'ヘルプ',
+            screen: 'Help',
+            icon: 'help-circle-outline'
         }
     ]
 
-    function onItemPress(screen: string) {
-        navigation.navigate(screen)
+    function onItemPress(item: DrawerItem) {
+        navigation.closeDrawer()
+        item.screen ? navigation.navigate(item.screen) : item.onPress()
     }
 
     return (
@@ -80,7 +88,7 @@ const DrawerContent = ({navigation}) => {
                         <PaperDrawer.Item
                             icon={item.icon}
                             label={item.label}
-                            onPress={onItemPress.bind(this, item.screen)}
+                            onPress={onItemPress.bind(this, item)}
                         />
                     )
                 }
@@ -92,11 +100,11 @@ const DrawerContent = ({navigation}) => {
 const AppDrawer = () => {
     return (
         <Drawer.Navigator
-            initialRouteName="Feed"
+            initialRouteName="main"
             drawerContent={DrawerContent}
         >
             <Drawer.Screen
-                name="Feed"
+                name="main"
                 component={Main}
                 options={{headerShown: false}}
             />
