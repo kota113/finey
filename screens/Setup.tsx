@@ -1,7 +1,7 @@
 import React from 'react';
 import {Alert, Animated, Dimensions, StatusBar, StyleSheet, Text, View,} from 'react-native';
 import {ExpandingDot} from 'react-native-animated-pagination-dots';
-import {Button, IconButton, TextInput} from "react-native-paper";
+import {Button, Dialog, IconButton, Portal, TextInput} from "react-native-paper";
 import {GoogleSignin} from "@react-native-google-signin/google-signin";
 import auth, {firebase} from '@react-native-firebase/auth';
 import {storeData} from "../utils/localStorage";
@@ -40,16 +40,23 @@ async function onGoogleButtonPress(navigation: any) {
         .catch((error) => console.log(error));
 }
 
-async function onEmailButtonPress(email: string, password: string, navigation: any) {
+async function onEmailButtonPress(email: string, password: string, navigation: any, showDialog: () => void) {
     auth()
         .createUserWithEmailAndPassword(email, password)
         .then((user) => {
-            storeData("user", user.user.toJSON()).then(() =>
-                navigation.reset({
-                    index: 0,
-                    routes: [{name: 'AppDrawer'}]
+            if (user.user.emailVerified) {
+                storeData("user", user.user.toJSON()).then(() => {
+                    Alert.prompt("ログインしました")
+                    navigation.reset({
+                        index: 0,
+                        routes: [{name: 'AppDrawer'}]
+                    })
                 })
-            )
+            } else {
+                user.user.sendEmailVerification().then(() => {
+                    showDialog()
+                })
+            }
         })
         .catch(error => {
             if (error.code === 'auth/email-already-in-use') {
@@ -64,7 +71,7 @@ async function onEmailButtonPress(email: string, password: string, navigation: a
                             })
                         })
                     })
-                    .catch((error) => {
+                    .catch(() => {
                         Alert.alert('エラー', 'メールアドレスまたはパスワードが間違っています');
                     });
             }
@@ -81,6 +88,8 @@ async function onEmailButtonPress(email: string, password: string, navigation: a
 const LoginElements = ({navigation}) => {
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
+    const [dialogVisible, setDialogVisible] = React.useState(false);
+    const showDialog = () => setDialogVisible(true)
     return (
         <>
             <View style={{marginTop: 40}}>
@@ -119,10 +128,28 @@ const LoginElements = ({navigation}) => {
                 style={{borderRadius: 7, marginTop: 10}}
                 icon={"account"}
                 mode={"contained"}
-                onPress={() => onEmailButtonPress(email, password, navigation)}
+                onPress={() => onEmailButtonPress(email, password, navigation, showDialog)}
             >
                 ログイン・登録
             </Button>
+            {/*  dialog  */}
+            <Portal>
+                <Dialog visible={dialogVisible} onDismiss={() => {
+                    setDialogVisible(false)
+                }}>
+                    <Dialog.Title>メールアドレスを認証</Dialog.Title>
+                    <Dialog.Content>
+                        <Text>ご入力のメールアドレスに確認メールを送信しました。ご確認ください。</Text>
+                        <Text>確認が完了しましたら、完了ボタンを押してください</Text>
+                    </Dialog.Content>
+                    <Dialog.Actions>
+                        <Button onPress={() => {
+                            setDialogVisible(false)
+                            onEmailButtonPress(email, password, navigation, showDialog).then()
+                        }}>完了</Button>
+                    </Dialog.Actions>
+                </Dialog>
+            </Portal>
         </>
     )
 }
@@ -179,7 +206,7 @@ const ButtonNavigation = ({navigation}) => {
 
     const scrollX = React.useRef(new Animated.Value(0)).current;
     const keyExtractor = React.useCallback((_, index) => index.toString(), []);
-    //Current item index of flatlist
+    //Current item index of FlatList
     const [activeIndex, setActiveIndex] = React.useState(0);
     let flatListRef = React.useRef(null);
     const gotoNextPage = () => {
