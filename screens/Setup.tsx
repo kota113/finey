@@ -162,7 +162,7 @@ const ButtonNavigation = ({navigation}) => {
             backgroundColor: '#7bcf6e',
         },
         {
-            text: "お金の力を借りたら？",
+            text: "お金の力を借りよう",
             description: "タスクを完了したら、預けたお金が返ってきます",
             image: require('../assets/appImage3.jpg'),
             backgroundColor: '#7370cf',
