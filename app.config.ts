@@ -27,6 +27,9 @@ export default {
             package: "com.kota113.Finey",
             // change based on build
             googleServicesFile: process.env.GOOGLE_SERVICES_JSON,
+            permissions: [
+                'android.permission.SCHEDULE_EXACT_ALARM'
+            ]
         },
         extra: {
             eas: {
