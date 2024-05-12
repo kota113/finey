@@ -39,17 +39,15 @@ export default {
         plugins: [
             "@react-native-google-signin/google-signin",
             "@react-native-firebase/app",
-            "@react-native-firebase/auth"
-            // [
-            //     "expo-build-properties",
-            //     {
-            //         "android": {
-            //             "compileSdkVersion": 31,
-            //             "targetSdkVersion": 31,
-            //             "buildToolsVersion": "31.0.0"
-            //         },
-            //     }
-            // ]
+            "@react-native-firebase/auth",
+            [
+                "expo-build-properties",
+                {
+                    "ios": {
+                        "useFrameworks": "static"
+                    }
+                }
+            ]
         ]
     }
 }
