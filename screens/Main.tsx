@@ -17,6 +17,7 @@ interface Task {
     deposit: number;
     dueDate: Date;
     notificationId: string;
+    notifyBefore: number;
 }
 
 
@@ -149,6 +150,7 @@ const Screen = ({navigation}) => {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [timeModalVisible, setTimeModalVisible] = useState(false);
     const [dateModalVisible, setDateModalVisible] = useState(false);
+    const [notificationSetModalVisible, setNotificationSetModalVisible] = useState(false);
     const [depositModalVisible, setDepositModalVisible] = useState(false);
 
     useEffect(() => {
@@ -172,7 +174,8 @@ const Screen = ({navigation}) => {
             isCompleted: false,
             deposit: 0,
             dueDate: new Date(),
-            notificationId: ""
+            notificationId: "",
+            notifyBefore: 0
         });
     }
 
@@ -203,10 +206,20 @@ const Screen = ({navigation}) => {
         setTask((currentTask) => {
             const updatedTask = {...currentTask};
             updatedTask.deposit = deposit;
-            addTask(updatedTask);
-            return null;
+            return updatedTask;
         });
         setDepositModalVisible(false);
+        setNotificationSetModalVisible(true);
+    }
+
+    function setNotificationBefore(notifyBefore: number) {
+        setTask((currentTask) => {
+            const updatedTask = {...currentTask};
+            updatedTask.notifyBefore = notifyBefore;
+            addTask(updatedTask);
+            setNotificationSetModalVisible(false);
+            return null;
+        });
     }
 
     const addBtnPressed = () => {
@@ -232,9 +245,14 @@ const Screen = ({navigation}) => {
         const newTasks = tasks.map(t => {
             if (t.id === task.id) {
                 t.isCompleted = false;
+                // notify 30 mins before due date
+                const notificationDate = new Date(t.dueDate.getTime() - 30 * 60 * 1000);
                 Notifications.scheduleNotificationAsync({
-                    content: {title: t.name},
-                    trigger: t.dueDate,
+                    content: {
+                        title: "期限が近づいています",
+                        body: t.name,
+                    },
+                    trigger: notificationDate,
                 }).then((id) => {
                     t.notificationId = id;
                 })
@@ -246,7 +264,7 @@ const Screen = ({navigation}) => {
     }
 
 
-    const addTask = (task) => {
+    const addTask = (task: Task) => {
         setTasks((prevTasks) => {
             Notifications.scheduleNotificationAsync({
                 content: {title: task.name},
@@ -284,6 +302,9 @@ const Screen = ({navigation}) => {
                 <SetTimeModal visible={timeModalVisible} setVisible={setTimeModalVisible} onConfirm={setDueTime}/>}
             {depositModalVisible && <SetDepositModal visible={depositModalVisible} setVisible={setDepositModalVisible}
                                                      onConfirm={setDeposit}/>}
+            {notificationSetModalVisible &&
+                <SetNotificationModal visible={notificationSetModalVisible} onConfirm={setNotificationBefore}
+                                      setVisible={setNotificationSetModalVisible}/>}
         </SafeAreaView>
     );
 };
