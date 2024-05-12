@@ -9,6 +9,7 @@ import {
     setNotificationChannelAsync
 } from "expo-notifications";
 import React, {useEffect} from "react";
+import * as Linking from 'expo-linking';
 
 
 function parsePermissions(
@@ -53,34 +54,39 @@ export const GrantNotificationDialog = () => {
 
     function requestPermission() {
         setVisible(false)
-        requestPermissionsAsync({
-            ios: {
-                allowAlert: true,
-                allowBadge: true,
-                allowSound: true
-            }
-        }).then((permissions) => {
-            const notificationState = parsePermissions(permissions, setNotificationPermState);
-            if (notificationState === "AUTHORIZED") {
-                // if platform is android, set channel
-                if (Platform.OS === "android") {
-                    setNotificationChannelAsync("task", {
-                        name: "タスク通知",
-                        importance: AndroidImportance.HIGH,
-                        vibrationPattern: [0, 250, 250, 250],
-                        enableVibrate: true,
-                    }).then((channel) => {
-                        if (channel === null) {
-                            console.log("Failed to create channel");
-                            setVisible(true);
-                        }
-                    })
+        if (notificationPermState === "UNDETERMINED") {
+            requestPermissionsAsync({
+                ios: {
+                    allowAlert: true,
+                    allowBadge: true,
+                    allowSound: true
                 }
-            } else {
-                setVisible(true);
-            }
-        })
-
+            }).then((permissions) => {
+                const notificationState = parsePermissions(permissions, setNotificationPermState);
+                if (notificationState === "AUTHORIZED") {
+                    // if platform is android, set channel
+                    if (Platform.OS === "android") {
+                        setNotificationChannelAsync("task", {
+                            name: "タスク通知",
+                            importance: AndroidImportance.HIGH,
+                            vibrationPattern: [0, 250, 250, 250],
+                            enableVibrate: true,
+                        }).then((channel) => {
+                            if (channel === null) {
+                                console.log("Failed to create channel");
+                                setVisible(true);
+                            }
+                        })
+                    }
+                } else {
+                    setVisible(true);
+                }
+            })
+        } else if (notificationPermState === "DENIED") {
+            Linking.openSettings().then(() => setVisible(false))
+        } else { // authorized
+            setVisible(false)
+        }
     }
 
     return (
@@ -89,8 +95,17 @@ export const GrantNotificationDialog = () => {
                 <Dialog.Icon icon={"bell"} color={"#ff8c00"}/>
                 <Dialog.Title style={styles.dialogTitle}>通知を許可してください</Dialog.Title>
                 <Dialog.Content>
-                    <Text>アプリがタスクの期限を通知するため、権限が必要です。</Text>
-                    <Text>次の画面で許可をタップしてください。</Text>
+                    {notificationPermState === "UNDETERMINED" ?
+                        <>
+                            <Text>アプリがタスクの期限を通知するため、権限が必要です。</Text>
+                            <Text>次の画面で許可をタップしてください。</Text>
+                        </>
+                        : notificationPermState === "DENIED" &&
+                        <>
+                            <Text>通知が拒否されています。</Text>
+                            <Text>設定から通知を許可してください。</Text>
+                        </>
+                    }
                 </Dialog.Content>
                 <Dialog.Actions>
                     <Button onPress={requestPermission}>
