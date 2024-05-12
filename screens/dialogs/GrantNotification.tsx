@@ -40,7 +40,7 @@ function parsePermissions(
 
 export const GrantNotificationDialog = () => {
     const [visible, setVisible] = React.useState(false);
-    const [notificationPermState, setNotificationPermState] = React.useState<"UNDETERMINED" | "DENIED" | "AUTHORIZED">("UNDETERMINED");
+    const [notificationPermState, setNotificationPermState] = React.useState<"UNDETERMINED" | "DENIED" | "AUTHORIZED">("AUTHORIZED");
     useEffect(() => {
         if (notificationPermState !== "AUTHORIZED") {
             setVisible(true)
