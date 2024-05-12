@@ -1,9 +1,11 @@
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {SafeAreaView, ScrollView, View} from "react-native";
-import {Appbar, Button, Chip, Dialog, IconButton, List, Portal, TextInput} from "react-native-paper";
+import {ActivityIndicator, Appbar, Button, Chip, Dialog, IconButton, List, Portal, TextInput} from "react-native-paper";
 import {DatePickerModal, TimePickerModal} from "react-native-paper-dates";
 import {getData, storeData} from "../utils/localStorage";
 import * as Notifications from "expo-notifications";
+import {firebase} from "@react-native-firebase/auth";
+import {GoogleSignin} from "@react-native-google-signin/google-signin";
 
 interface Task {
     id: number;
@@ -345,6 +347,9 @@ const Screen = ({navigation}) => {
 };
 
 export default ({navigation}) => {
+    // set true if firebase is not initialized
+    const [initializing, setInitializing] = React.useState(!Boolean(firebase.app));
+    const [googleSignInConfigured, setGoogleSignInConfigured] = React.useState(false);
     getData("user").then((user) => {
         if (!user) {
             navigation.reset({
@@ -353,8 +358,27 @@ export default ({navigation}) => {
             })
         }
     });
-
+    if (initializing) {
+        firebase.initializeApp({
+            // apiKey: process.env.FIREBASE_API_KEY,
+            apiKey: "AIzaSyAw-_akclT1RswbPWcNd0gT7Bjf0JaJwQY",
+            // appId: process.env.FIREBASE_APP_ID,
+            appId: "1:890921992941:android:dd9b8a1460c34a2c5e82e4",
+            projectId: "finey-9c921",
+            databaseURL: "",
+            messagingSenderId: "",
+            storageBucket: "",
+        }).then(() => setInitializing(false))
+    }
+    if (!googleSignInConfigured) {
+        GoogleSignin.configure({
+            webClientId: process.env.GOOGLE_WEB_CLIENT_ID,
+        })
+        setGoogleSignInConfigured(true)
+    }
     return (
-        <Screen navigation={navigation}/>
+        <>
+            {initializing ? <ActivityIndicator size={"large"}/> : <Screen navigation={navigation}/>}
+        </>
     );
 };

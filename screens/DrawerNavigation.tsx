@@ -5,7 +5,6 @@ import {FlatList, StyleSheet, View} from "react-native";
 import {registerTranslation} from "react-native-paper-dates";
 import * as Notifications from "expo-notifications";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
-import * as WebBrowser from 'expo-web-browser';
 
 
 registerTranslation('ja', {
@@ -54,7 +53,7 @@ const DrawerContent = ({navigation}) => {
     const DrawerItems: DrawerItem[] = [
         {
             label: 'お支払い',
-            onPress: () => WebBrowser.openBrowserAsync('https://expo.dev'),
+            screen: 'EditPayment',
             icon: 'credit-card'
         },
         {
@@ -114,7 +113,7 @@ const AppDrawer = () => {
 
 
 const styles = StyleSheet.create({
-    drawerContainer : {
+    drawerContainer: {
         paddingTop: 10
     }
 })

@@ -9,6 +9,7 @@ import {createNativeStackNavigator} from "@react-navigation/native-stack";
 import {NavigationContainer, Theme} from "@react-navigation/native";
 import Settings from "./screens/Settings";
 import Setup from "./screens/Setup";
+import EditPayment from "./screens/EditPayment";
 
 const Stack = createNativeStackNavigator();
 
@@ -33,6 +34,7 @@ const StackNavigator = () => {
             <Stack.Navigator initialRouteName={"AppDrawer"}>
                 <Stack.Screen name="AppDrawer" component={AppDrawer} options={{headerShown: false}}/>
                 <Stack.Screen name="Settings" component={Settings} options={{headerShown: false}}/>
+                <Stack.Screen name="EditPayment" component={EditPayment} options={{headerShown: false}}/>
                 <Stack.Screen name="Setup" component={Setup} options={{headerShown: false}}/>
                 <Stack.Screen name="Help" component={Setup} options={{headerShown: false}}/>
             </Stack.Navigator>

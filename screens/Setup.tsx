@@ -3,7 +3,7 @@ import {Alert, Animated, Dimensions, StatusBar, StyleSheet, Text, View,} from 'r
 import {ExpandingDot} from 'react-native-animated-pagination-dots';
 import {Button, Dialog, IconButton, Portal, TextInput} from "react-native-paper";
 import {GoogleSignin} from "@react-native-google-signin/google-signin";
-import auth, {firebase} from '@react-native-firebase/auth';
+import auth from '@react-native-firebase/auth';
 import {storeData} from "../utils/localStorage";
 
 const {width} = Dimensions.get('screen');
@@ -44,17 +44,19 @@ async function onEmailButtonPress(email: string, password: string, navigation: a
     auth()
         .createUserWithEmailAndPassword(email, password)
         .then((user) => {
-            if (user.user.emailVerified) {
-                storeData("user", user.user.toJSON()).then(() => {
-                    Alert.prompt("ログインしました")
-                    navigation.reset({
-                        index: 0,
-                        routes: [{name: 'AppDrawer'}]
-                    })
-                })
-            } else {
+            if (!user.user.emailVerified) {
                 user.user.sendEmailVerification().then(() => {
-                    showDialog()
+                    user.user.getIdToken().then(token => {
+                        fetch(`${process.env.EXPO_PUBLIC_API_URL}/register`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Bearer ' + token
+                            }
+                        }).then(() => {
+                            showDialog()
+                        })
+                    })
                 })
             }
         })
@@ -156,25 +158,6 @@ const LoginElements = ({navigation}) => {
 
 
 const ButtonNavigation = ({navigation}) => {
-    const [initializing, setInitializing] = React.useState(true);
-    const [googleSignInConfigured, setGoogleSignInConfigured] = React.useState(false);
-    if (initializing) {
-        firebase.initializeApp({
-            apiKey: process.env.FIREBASE_API_KEY,
-            appId: process.env.FIREBASE_APP_ID,
-            projectId: process.env.FIREBASE_PROJECT_ID,
-            databaseURL: "",
-            messagingSenderId: "",
-            storageBucket: "",
-        }).then(() => setInitializing(false))
-    }
-
-    if (!googleSignInConfigured) {
-        GoogleSignin.configure({
-            webClientId: process.env.GOOGLE_WEB_CLIENT_ID,
-        })
-        setGoogleSignInConfigured(true)
-    }
     const data: PageItem[] = [
         {
             text: "Fineyへようこそ",
