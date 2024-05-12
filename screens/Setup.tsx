@@ -91,6 +91,7 @@ const LoginElements = ({navigation}) => {
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [dialogVisible, setDialogVisible] = React.useState(false);
+    const [emailLoginLoading, setEmailLoginLoading] = React.useState(false);
     const showDialog = () => setDialogVisible(true)
     return (
         <>
@@ -130,7 +131,12 @@ const LoginElements = ({navigation}) => {
                 style={{borderRadius: 7, marginTop: 10}}
                 icon={"account"}
                 mode={"contained"}
-                onPress={() => onEmailButtonPress(email, password, navigation, showDialog)}
+                loading={emailLoginLoading}
+                disabled={emailLoginLoading}
+                onPress={() => {
+                    setEmailLoginLoading(true)
+                    onEmailButtonPress(email, password, navigation, showDialog).then(() => setEmailLoginLoading(false))
+                }}
             >
                 ログイン・登録
             </Button>
