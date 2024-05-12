@@ -245,8 +245,8 @@ const Screen = ({navigation}) => {
         const newTasks = tasks.map(t => {
             if (t.id === task.id) {
                 t.isCompleted = false;
-                // notify 30 mins before due date
-                const notificationDate = new Date(t.dueDate.getTime() - 30 * 60 * 1000);
+                // notify certain time before due date
+                const notificationDate = new Date(t.dueDate.getTime() - t.notifyBefore);
                 Notifications.scheduleNotificationAsync({
                     content: {
                         title: "期限が近づいています",
@@ -266,12 +266,17 @@ const Screen = ({navigation}) => {
 
     const addTask = (task: Task) => {
         setTasks((prevTasks) => {
+            // notify certain time before due date
+            const notificationDate = new Date(task.dueDate.getTime() - task.notifyBefore);
             Notifications.scheduleNotificationAsync({
-                content: {title: task.name},
-                trigger: task.dueDate,
-            }).then((id: string) =>
-                task.notificationId = id
-            );
+                content: {
+                    title: "期限が近づいています",
+                    body: task.name,
+                },
+                trigger: notificationDate,
+            }).then((id) => {
+                task.notificationId = id;
+            })
             storeData("tasks", [...prevTasks, task]).then(() => console.log("stored"));
             return [...prevTasks, task]
         });
