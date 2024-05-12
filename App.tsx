@@ -10,6 +10,9 @@ import {NavigationContainer, Theme} from "@react-navigation/native";
 import Settings from "./screens/Settings";
 import Setup from "./screens/Setup";
 import EditPayment from "./screens/EditPayment";
+import {firebase} from "@react-native-firebase/auth";
+import {GoogleSignin} from "@react-native-google-signin/google-signin";
+import {getFirestore, initializeFirestore} from "@react-native-firebase/firestore/lib/modular";
 
 const Stack = createNativeStackNavigator();
 
@@ -29,6 +32,31 @@ const GlobalTheme: Theme = {
 
 
 const StackNavigator = () => {
+    // set true if firebase is not initialized
+    const [googleSignInConfigured, setGoogleSignInConfigured] = React.useState(false);
+    if (!firebase.app) {
+        firebase.initializeApp({
+            // apiKey: process.env.FIREBASE_API_KEY,
+            apiKey: "AIzaSyAw-_akclT1RswbPWcNd0gT7Bjf0JaJwQY",
+            // appId: process.env.FIREBASE_APP_ID,
+            appId: "1:890921992941:android:dd9b8a1460c34a2c5e82e4",
+            projectId: "finey-9c921",
+            databaseURL: "",
+            messagingSenderId: "",
+            storageBucket: "",
+        }).then(() => console.log("Firebase initialized"))
+    }
+    if (!getFirestore()) {
+        initializeFirestore(firebase.app(), {
+            persistence: true
+        }).then(() => console.log("Firestore initialized"))
+    }
+    if (!googleSignInConfigured) {
+        GoogleSignin.configure({
+            webClientId: process.env.GOOGLE_WEB_CLIENT_ID,
+        })
+        setGoogleSignInConfigured(true)
+    }
     return (
         <NavigationContainer theme={GlobalTheme}>
             <Stack.Navigator initialRouteName={"AppDrawer"}>

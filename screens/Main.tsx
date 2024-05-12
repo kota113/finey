@@ -1,14 +1,14 @@
 import React, {useEffect, useState} from "react";
 import {SafeAreaView, ScrollView, View} from "react-native";
-import {ActivityIndicator, Appbar, Chip, IconButton, List, TextInput} from "react-native-paper";
+import {Appbar, Chip, IconButton, List, TextInput} from "react-native-paper";
 import {getData, storeData} from "../utils/localStorage";
 import * as Notifications from "expo-notifications";
-import {firebase} from "@react-native-firebase/auth";
-import {GoogleSignin} from "@react-native-google-signin/google-signin";
 import {SetDepositModal} from "./dialogs/SetDeposit";
 import {SetNotificationModal} from "./dialogs/SetNotification";
 import {DateSetModal} from "./dialogs/SetDate";
 import {SetTimeModal} from "./dialogs/SetTime";
+import {SubmitProofModal} from "./dialogs/SubmitProof";
+import {GrantNotificationDialog} from "./dialogs/GrantNotification";
 
 interface Task {
     id: number;
@@ -148,10 +148,11 @@ const TaskList = ({tasks, deleteTask, markTaskComplete, markTaskIncomplete}) => 
 const Screen = ({navigation}) => {
     const [task, setTask] = useState<Task>();
     const [tasks, setTasks] = useState<Task[]>([]);
-    const [timeModalVisible, setTimeModalVisible] = useState(false);
-    const [dateModalVisible, setDateModalVisible] = useState(false);
-    const [notificationSetModalVisible, setNotificationSetModalVisible] = useState(false);
-    const [depositModalVisible, setDepositModalVisible] = useState(false);
+    const [timeModalVisible, setTimeModalVisible] = useState<boolean>(false);
+    const [dateModalVisible, setDateModalVisible] = useState<boolean>(false);
+    const [notificationSetModalVisible, setNotificationSetModalVisible] = useState<boolean>(false);
+    const [depositModalVisible, setDepositModalVisible] = useState<boolean>(false);
+    const [submitProofModalVisible, setSubmitProofModalVisible] = useState<boolean>(true);
 
     useEffect(() => {
         getData("tasks").then((tasks) => {
@@ -220,6 +221,10 @@ const Screen = ({navigation}) => {
             setNotificationSetModalVisible(false);
             return null;
         });
+    }
+
+    function submitProof() {
+        setSubmitProofModalVisible(false);
     }
 
     const addBtnPressed = () => {
@@ -310,14 +315,15 @@ const Screen = ({navigation}) => {
             {notificationSetModalVisible &&
                 <SetNotificationModal visible={notificationSetModalVisible} onConfirm={setNotificationBefore}
                                       setVisible={setNotificationSetModalVisible}/>}
+            {submitProofModalVisible &&
+                <SubmitProofModal visible={submitProofModalVisible} setVisible={setSubmitProofModalVisible}
+                                  onSubmit={submitProof}/>}
+            <GrantNotificationDialog/>
         </SafeAreaView>
     );
 };
 
 export default ({navigation}) => {
-    // set true if firebase is not initialized
-    const [initializing, setInitializing] = React.useState(!Boolean(firebase.app));
-    const [googleSignInConfigured, setGoogleSignInConfigured] = React.useState(false);
     getData("user").then((user) => {
         if (!user) {
             navigation.reset({
@@ -326,27 +332,7 @@ export default ({navigation}) => {
             })
         }
     });
-    if (initializing) {
-        firebase.initializeApp({
-            // apiKey: process.env.FIREBASE_API_KEY,
-            apiKey: "AIzaSyAw-_akclT1RswbPWcNd0gT7Bjf0JaJwQY",
-            // appId: process.env.FIREBASE_APP_ID,
-            appId: "1:890921992941:android:dd9b8a1460c34a2c5e82e4",
-            projectId: "finey-9c921",
-            databaseURL: "",
-            messagingSenderId: "",
-            storageBucket: "",
-        }).then(() => setInitializing(false))
-    }
-    if (!googleSignInConfigured) {
-        GoogleSignin.configure({
-            webClientId: process.env.GOOGLE_WEB_CLIENT_ID,
-        })
-        setGoogleSignInConfigured(true)
-    }
     return (
-        <>
-            {initializing ? <ActivityIndicator size={"large"}/> : <Screen navigation={navigation}/>}
-        </>
+        <Screen navigation={navigation}/>
     );
 };
