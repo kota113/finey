@@ -14,20 +14,22 @@ import {firebase} from "@react-native-firebase/auth";
 import {GoogleSignin} from "@react-native-google-signin/google-signin";
 import {getFirestore, initializeFirestore} from "@react-native-firebase/firestore/lib/modular";
 import storage from '@react-native-firebase/storage';
+import {materialTheme} from "./materialTheme";
 
 const Stack = createNativeStackNavigator();
 
+// noinspection GrazieInspection
 const GlobalTheme: Theme = {
     ...DefaultTheme,
     colors: {
-        ...DefaultTheme.colors,
-        // Customize your theme colors here
-        background: 'white',
-        primary: DefaultTheme.colors.primary,
-        card: DefaultTheme.colors.surface,
-        text: "black",
-        border: "",
-        notification: "",
+        ...materialTheme.colors,
+        primary: materialTheme.colors.primary,
+        background: materialTheme.colors.surface,
+        text: materialTheme.colors.onSurface,
+        // random colors, idk what they do
+        border: materialTheme.colors.onSurface,
+        notification: materialTheme.colors.primary,
+        card: materialTheme.colors.surface,
     },
 };
 
