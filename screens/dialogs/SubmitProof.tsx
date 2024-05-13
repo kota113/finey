@@ -1,24 +1,33 @@
-import {Button, Dialog, Icon, Portal, Text, TouchableRipple} from "react-native-paper";
+import {ActivityIndicator, Button, Dialog, Icon, Portal, Text, TouchableRipple} from "react-native-paper";
 import {Alert, ImageBackground, Platform, StyleSheet, TouchableOpacity, View} from "react-native";
 import * as DocumentPicker from 'expo-document-picker';
 import {DocumentPickerResult} from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import {ImagePickerResult} from 'expo-image-picker';
 import {useState} from "react";
+import {ProofFile} from "../../types";
 
 
-function launchDocumentPicker(setSelectedFile: (uri: string) => void, setThumbnail: (uri: string) => void) {
+function launchDocumentPicker(setSelectedFile: (file: ProofFile) => void) {
     function onSelected(result: ImagePickerResult | DocumentPickerResult) {
         if (result.canceled) {
             return;
         } else {
-            const file = result.assets[0]
-            setSelectedFile(file.uri)
-            if (file.mimeType?.startsWith("image") || file.mimeType?.startsWith("video")) {
-                setThumbnail(file.uri)
+            const asset = result.assets[0]
+            let file: ProofFile;
+            if (asset.mimeType?.startsWith("image") || asset.mimeType?.startsWith("video")) {
+                file = {
+                    uri: asset.uri,
+                    thumbnail: asset.uri
+                }
             } else {
-                setThumbnail(undefined)
+                file = {
+                    uri: asset.uri,
+                    //@ts-ignore
+                    title: asset.name
+                }
             }
+            setSelectedFile(file)
         }
     }
 
@@ -52,7 +61,7 @@ function launchDocumentPicker(setSelectedFile: (uri: string) => void, setThumbna
 }
 
 
-const FileSelectPlaceholder = ({selectedFile, onPress}) => (
+const FileSelectPlaceholder = ({selectedFile, onPress}: { selectedFile: ProofFile, onPress: () => void }) => (
     <TouchableRipple
         style={{...styles.proofSubmitArea}}
         onPress={onPress}
@@ -63,7 +72,7 @@ const FileSelectPlaceholder = ({selectedFile, onPress}) => (
                     <Icon size={30} source={"file"} color={"black"}/>
                     <Text style={{fontWeight: "bold", marginTop: 10}}
                           variant="titleSmall">
-                        {selectedFile.split("/").pop().split(".").pop().toUpperCase()}ファイル
+                        {selectedFile.title}
                     </Text>
                 </>
                 :
@@ -83,36 +92,47 @@ const FileSelectPlaceholder = ({selectedFile, onPress}) => (
 )
 
 export const SubmitProofModal = ({visible, setVisible, onSubmit, onDismiss}) => {
-    const [selectedFile, setSelectedFile] = useState<string | null>(null);
-    const [thumbnail, setThumbnail] = useState<string | undefined>(undefined);
+    const [selectedFile, setSelectedFile] = useState<ProofFile>(null);
+    const [submitting, setSubmitting] = useState(false);
+
+    function onSubmitPressed() {
+        setSubmitting(true);
+        onSubmit(selectedFile).then((res: boolean) => {
+            if (res === true) {
+                setSubmitting(false);
+                setSelectedFile(null);
+                setVisible(false);
+            }
+        })
+    }
     return (
         <Portal>
             <Dialog visible={visible} onDismiss={onDismiss}>
                 <Dialog.Title>お疲れさまです！</Dialog.Title>
                 <Dialog.Content>
                     <Text>証明となる画像などはありますか？</Text>
-                    {thumbnail ?
-                        <ImageBackground
-                            source={{uri: thumbnail}}
-                            style={{...styles.proofSubmitArea, opacity: selectedFile ? 1 : 0}}
-                            imageStyle={{borderRadius: 20, resizeMode: "contain"}}
-                        >
-                            <TouchableOpacity style={{flex: 1, opacity: 0}}
-                                              onPress={() => launchDocumentPicker(setSelectedFile, setThumbnail)}/>
-                        </ImageBackground>
+                    {submitting ?
+                        <ActivityIndicator size={"large"} style={styles.proofSubmitArea}/>
                         :
-                        <FileSelectPlaceholder selectedFile={selectedFile}
-                                               onPress={() => launchDocumentPicker(setSelectedFile, setThumbnail)}/>
+                        selectedFile?.thumbnail ?
+                            <ImageBackground
+                                source={{uri: selectedFile.thumbnail}}
+                                style={{...styles.proofSubmitArea, opacity: selectedFile ? 1 : 0}}
+                                imageStyle={{borderRadius: 20, resizeMode: "contain"}}
+                            >
+                                <TouchableOpacity style={{flex: 1, opacity: 0}}
+                                                  onPress={() => launchDocumentPicker(setSelectedFile)}/>
+                            </ImageBackground>
+                            :
+                            <FileSelectPlaceholder selectedFile={selectedFile}
+                                                   onPress={() => launchDocumentPicker(setSelectedFile)}/>
                     }
                 </Dialog.Content>
                 <Dialog.Actions>
                     <Button onPress={() => setVisible(false)}>キャンセル</Button>
                     <Button
-                        onPress={() => {
-                            onSubmit();
-                            setVisible(false);
-                        }}
-                        disabled={!Boolean(selectedFile)}
+                        onPress={onSubmitPressed}
+                        disabled={!Boolean(selectedFile) || submitting}
                     >
                         送信
                     </Button>

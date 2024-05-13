@@ -9,16 +9,9 @@ import {DateSetModal} from "./dialogs/SetDate";
 import {SetTimeModal} from "./dialogs/SetTime";
 import {SubmitProofModal} from "./dialogs/SubmitProof";
 import {GrantNotificationDialog} from "./dialogs/GrantNotification";
-
-interface Task {
-    id: number;
-    name: string;
-    isCompleted: boolean;
-    deposit: number;
-    dueDate: Date;
-    notificationId: string;
-    notifyBefore: number;
-}
+import auth, {firebase} from "@react-native-firebase/auth";
+import '@react-native-firebase/storage';
+import {ProofFile, Task} from "../types";
 
 
 const TopAppBar = ({navigation}) => (
@@ -151,7 +144,7 @@ const Screen = ({navigation}) => {
     const [dateModalVisible, setDateModalVisible] = useState<boolean>(false);
     const [notificationSetModalVisible, setNotificationSetModalVisible] = useState<boolean>(false);
     const [depositModalVisible, setDepositModalVisible] = useState<boolean>(false);
-    const [submitProofModalVisible, setSubmitProofModalVisible] = useState<boolean>(true);
+    const [submitProofModalVisible, setSubmitProofModalVisible] = useState<boolean>(false);
     const [fileSubmittingTask, setFileSubmittingTask] = useState<Task>();
 
     useEffect(() => {
@@ -239,17 +232,29 @@ const Screen = ({navigation}) => {
         setFileSubmittingTask(undefined)
     }
 
-    function onFileSubmit(filePath: string) {
-        setSubmitProofModalVisible(false)
-        const newTasks = tasks.map(t => {
-            if (t.id === fileSubmittingTask.id) {
-                t.isCompleted = true;
-                Notifications.cancelScheduledNotificationAsync(t.notificationId).then(() => console.log("cancelled"));
+    async function onFileSubmit(file: ProofFile) {
+        firebase.storage().ref(`${auth().currentUser.uid}/${file.title || file.uri.split("/").pop()}`).putFile(
+            file.uri,
+            {
+                customMetadata: {
+                    taskId: fileSubmittingTask.id.toString()
+                }
             }
-            return t;
-        });
-        setTasks(newTasks);
-        storeData("tasks", newTasks).then(() => console.log("stored"));
+        ).then(() => {
+            const newTasks = tasks.map(t => {
+                if (t.id === fileSubmittingTask.id) {
+                    t.isCompleted = true;
+                    Notifications.cancelScheduledNotificationAsync(t.notificationId).then(() => console.log("cancelled"));
+                }
+                return t;
+            });
+            setTasks(newTasks);
+            storeData("tasks", newTasks).then(() => {
+                console.log("stored")
+                setSubmitProofModalVisible(false)
+            });
+        })
+        return true;
     }
 
     const markTaskIncomplete = (task: Task) => {

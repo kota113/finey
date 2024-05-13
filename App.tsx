@@ -13,6 +13,7 @@ import EditPayment from "./screens/EditPayment";
 import {firebase} from "@react-native-firebase/auth";
 import {GoogleSignin} from "@react-native-google-signin/google-signin";
 import {getFirestore, initializeFirestore} from "@react-native-firebase/firestore/lib/modular";
+import storage from '@react-native-firebase/storage';
 
 const Stack = createNativeStackNavigator();
 
@@ -51,6 +52,7 @@ const StackNavigator = () => {
             persistence: true
         }).then(() => console.log("Firestore initialized"))
     }
+    storage()
     if (!googleSignInConfigured) {
         GoogleSignin.configure({
             webClientId: process.env.GOOGLE_WEB_CLIENT_ID,
