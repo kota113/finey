@@ -233,7 +233,7 @@ const Screen = ({navigation}) => {
     }
 
     async function onFileSubmit(file: ProofFile, description: string) {
-        firebase.storage().ref(`${auth().currentUser.uid}/${file.title || file.uri.split("/").pop()}`).putFile(
+        return firebase.storage().ref(`${auth().currentUser.uid}/${file.title || file.uri.split("/").pop()}`).putFile(
             file.uri,
             {
                 customMetadata: {
@@ -242,7 +242,7 @@ const Screen = ({navigation}) => {
                     description: description
                 }
             }
-        ).then(() => {
+        ).then(async () => {
             const newTasks = tasks.map(t => {
                 if (t.id === fileSubmittingTask.id) {
                     t.isCompleted = true;
@@ -251,12 +251,9 @@ const Screen = ({navigation}) => {
                 return t;
             });
             setTasks(newTasks);
-            storeData("tasks", newTasks).then(() => {
-                console.log("stored")
-                setSubmitProofModalVisible(false)
-            });
+            await storeData("tasks", newTasks);
+            console.log("stored");
         })
-        return true;
     }
 
     const markTaskIncomplete = (task: Task) => {
@@ -329,9 +326,8 @@ const Screen = ({navigation}) => {
             {notificationSetModalVisible &&
                 <SetNotificationModal visible={notificationSetModalVisible} onConfirm={setNotificationBefore}
                                       setVisible={setNotificationSetModalVisible}/>}
-            {submitProofModalVisible &&
-                <SubmitProofModal visible={submitProofModalVisible} setVisible={setSubmitProofModalVisible}
-                                  onSubmit={onFileSubmit} onDismiss={cancelFileSubmit}/>}
+            <SubmitProofModal visible={submitProofModalVisible} setVisible={setSubmitProofModalVisible}
+                              onSubmit={onFileSubmit} onDismiss={cancelFileSubmit}/>
             <GrantNotificationDialog/>
         </SafeAreaView>
     );

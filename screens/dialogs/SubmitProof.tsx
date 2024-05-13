@@ -100,15 +100,22 @@ export const SubmitProofModal = ({visible, setVisible, onSubmit, onDismiss}) => 
         setSubmitting(true);
         onSubmit(selectedFile, fileDescription).then((res: boolean) => {
             if (res === true) {
+                setVisible(false);
                 setSubmitting(false);
                 setSelectedFile(null);
-                setVisible(false);
+                setFileDescription("");
             }
         })
     }
     return (
         <Portal>
-            <Dialog visible={visible} onDismiss={onDismiss}>
+            <Dialog
+                visible={visible}
+                onDismiss={onDismiss}
+                // disable dismiss when submitting
+                dismissable={!submitting}
+                dismissableBackButton={!submitting}
+            >
                 <Dialog.Title>お疲れさまです！</Dialog.Title>
                 <Dialog.Content>
                     <Text>証明となる画像などはありますか？</Text>
@@ -133,10 +140,11 @@ export const SubmitProofModal = ({visible, setVisible, onSubmit, onDismiss}) => 
                         label={"ファイルの説明（省略可）"}
                         value={fileDescription}
                         onChangeText={setFileDescription}
+                        disabled={submitting}
                     />
                 </Dialog.Content>
                 <Dialog.Actions>
-                    <Button onPress={() => setVisible(false)}>キャンセル</Button>
+                    <Button onPress={() => setVisible(false)} disabled={submitting}>キャンセル</Button>
                     <Button
                         onPress={onSubmitPressed}
                         disabled={!Boolean(selectedFile) || submitting}
