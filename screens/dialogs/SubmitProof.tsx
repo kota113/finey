@@ -51,9 +51,6 @@ function launchDocumentPicker(setSelectedFile: (uri: string) => void, setThumbna
     }
 }
 
-function onFileSelected() {
-
-}
 
 const FileSelectPlaceholder = ({selectedFile, onPress}) => (
     <TouchableRipple
