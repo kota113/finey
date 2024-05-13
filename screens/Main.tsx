@@ -342,14 +342,12 @@ const Screen = ({navigation}) => {
 };
 
 export default ({navigation}) => {
-    getData("user").then((user) => {
-        if (!user) {
-            navigation.reset({
-                index: 0,
-                routes: [{name: 'Setup'}]
-            })
-        }
-    });
+    if (auth().currentUser === null) {
+        navigation.reset({
+            index: 0,
+            routes: [{name: 'Setup'}]
+        })
+    }
     return (
         <Screen navigation={navigation}/>
     );
