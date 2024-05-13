@@ -233,7 +233,8 @@ const Screen = ({navigation}) => {
     }
 
     async function onFileSubmit(file: ProofFile, description: string) {
-        return firebase.storage().ref(`${auth().currentUser.uid}/${file.title || file.uri.split("/").pop()}`).putFile(
+        const fileRef = `${auth().currentUser.uid}/${file.title || file.uri.split("/").pop()}`
+        return firebase.storage().ref(fileRef).putFile(
             file.uri,
             {
                 customMetadata: {
@@ -252,7 +253,7 @@ const Screen = ({navigation}) => {
             });
             setTasks(newTasks);
             await storeData("tasks", newTasks);
-            console.log("stored");
+            console.log("stored to local storage");
         })
     }
 
