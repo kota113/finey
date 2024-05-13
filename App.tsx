@@ -1,7 +1,7 @@
 import 'react-native-gesture-handler';
 import * as React from 'react';
 import {AppRegistry} from 'react-native';
-import {DefaultTheme, PaperProvider} from 'react-native-paper';
+import {MD3LightTheme as DefaultTheme, PaperProvider} from 'react-native-paper';
 import config from './app.config';
 import AppDrawer from './screens/DrawerNavigation';
 import {StatusBar} from "expo-status-bar";
