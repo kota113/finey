@@ -43,7 +43,7 @@ const StackNavigator = () => {
             projectId: "finey-9c921",
             databaseURL: "",
             messagingSenderId: "",
-            storageBucket: "",
+            storageBucket: "finey-9c921.appspot.com",
         }).then(() => console.log("Firebase initialized"))
     }
     if (!getFirestore()) {
