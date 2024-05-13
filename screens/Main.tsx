@@ -79,10 +79,10 @@ const TaskListItem = ({index, task, deleteTask, markTaskComplete, markTaskIncomp
 
 const TaskList = ({tasks, deleteTask, markTaskComplete, markTaskIncomplete}) => {
     // Filter out completed tasks
-    const completedTasks = tasks.filter(task => task.isCompleted);
+    const completedTasks = tasks.filter((task: Task) => task.isCompleted);
 
     // Group tasks by due date
-    const groupedTasks = tasks.reduce((groups, task) => {
+    const groupedTasks = tasks.reduce((groups: object, task: Task) => {
         if (task.isCompleted) return groups; // Don't group completed tasks
         const date = task.dueDate.toISOString().split('T')[0]; // Get the date part of the timestamp
         if (!groups[date]) {
@@ -95,7 +95,7 @@ const TaskList = ({tasks, deleteTask, markTaskComplete, markTaskIncomplete}) => 
     // Convert the groups object to an array of sections
     let sections = Object.keys(groupedTasks).map(date => ({
         title: `${new Date(date).getMonth()}月${new Date(date).getDate()}日(${["日", "月", "火", "水", "木", "金", "土"][new Date(date).getDay()]})`,
-        data: groupedTasks[date].sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime()) // Sort tasks by time within each group
+        data: groupedTasks[date].sort((a: Task, b: Task) => a.dueDate.getTime() - b.dueDate.getTime()) // Sort tasks by time within each group
     }));
 
     sections = sections.sort((a, b) => {
@@ -128,7 +128,7 @@ const TaskList = ({tasks, deleteTask, markTaskComplete, markTaskIncomplete}) => 
             ))}
             {completedTasks.length > 0 &&
                 <List.Accordion title={"完了済み"}>
-                    {completedTasks.map((task, index) => (
+                    {completedTasks.map((task: Task, index: number) => (
                         <TaskListItem
                             key={index}
                             index={index}
@@ -153,6 +153,7 @@ const Screen = ({navigation}) => {
     const [notificationSetModalVisible, setNotificationSetModalVisible] = useState<boolean>(false);
     const [depositModalVisible, setDepositModalVisible] = useState<boolean>(false);
     const [submitProofModalVisible, setSubmitProofModalVisible] = useState<boolean>(true);
+    const [fileSubmittingTask, setFileSubmittingTask] = useState<Task>();
 
     useEffect(() => {
         getData("tasks").then((tasks) => {
@@ -223,10 +224,6 @@ const Screen = ({navigation}) => {
         });
     }
 
-    function submitProof() {
-        setSubmitProofModalVisible(false);
-    }
-
     const addBtnPressed = () => {
         if (task?.name) {
             setDateModalVisible(true);
@@ -234,8 +231,19 @@ const Screen = ({navigation}) => {
     };
 
     const markTaskComplete = (task: Task) => {
+        setFileSubmittingTask(task)
+        setSubmitProofModalVisible(true)
+    }
+
+    function cancelFileSubmit() {
+        setSubmitProofModalVisible(false)
+        setFileSubmittingTask(undefined)
+    }
+
+    function onFileSubmit(filePath: string) {
+        setSubmitProofModalVisible(false)
         const newTasks = tasks.map(t => {
-            if (t.id === task.id) {
+            if (t.id === fileSubmittingTask.id) {
                 t.isCompleted = true;
                 Notifications.cancelScheduledNotificationAsync(t.notificationId).then(() => console.log("cancelled"));
             }
@@ -244,7 +252,6 @@ const Screen = ({navigation}) => {
         setTasks(newTasks);
         storeData("tasks", newTasks).then(() => console.log("stored"));
     }
-
 
     const markTaskIncomplete = (task: Task) => {
         const newTasks = tasks.map(t => {
@@ -266,6 +273,7 @@ const Screen = ({navigation}) => {
         });
         setTasks(newTasks);
         storeData("tasks", newTasks).then(() => console.log("stored"));
+        return true;
     }
 
 
@@ -317,7 +325,7 @@ const Screen = ({navigation}) => {
                                       setVisible={setNotificationSetModalVisible}/>}
             {submitProofModalVisible &&
                 <SubmitProofModal visible={submitProofModalVisible} setVisible={setSubmitProofModalVisible}
-                                  onSubmit={submitProof}/>}
+                                  onSubmit={onFileSubmit} onDismiss={cancelFileSubmit}/>}
             <GrantNotificationDialog/>
         </SafeAreaView>
     );
