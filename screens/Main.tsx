@@ -30,7 +30,6 @@ const TopAppBar = ({navigation}) => (
 
 
 const TaskListItem = ({index, task, deleteTask, markTaskComplete, markTaskIncomplete}) => {
-    const [leftIcon, setLeftIcon] = useState(task.isCompleted ? "checkbox-marked-circle-outline" : "checkbox-blank-circle-outline");
     const Description = () => (
         <View style={{flexDirection: "row", width: "70%"}}>
             <Chip
@@ -56,7 +55,6 @@ const TaskListItem = ({index, task, deleteTask, markTaskComplete, markTaskIncomp
     )
 
     function onCheckPress() {
-        setLeftIcon(task.isCompleted ? "checkbox-blank-circle-outline" : "checkbox-marked-circle-outline");
         setTimeout(() => {
             task.isCompleted ? markTaskIncomplete(task) : markTaskComplete(task);
         }, 150);
@@ -70,7 +68,8 @@ const TaskListItem = ({index, task, deleteTask, markTaskComplete, markTaskIncomp
             description={Description}
             right={props => <IconButton {...props} icon="delete"
                                         onPress={() => deleteTask(task)}/>}
-            left={props => <IconButton {...props} icon={leftIcon}
+            left={props => <IconButton {...props}
+                                       icon={task.isCompleted ? "checkbox-marked-circle-outline" : "checkbox-blank-circle-outline"}
                                        onPress={onCheckPress}/>}
         />
     )
