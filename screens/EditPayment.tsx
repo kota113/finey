@@ -1,8 +1,7 @@
 import {firebase} from "@react-native-firebase/auth";
 import * as WebBrowser from "expo-web-browser";
-import {SafeAreaView} from "react-native";
-import {useEffect, useState} from "react";
-import {ActivityIndicator, Portal} from "react-native-paper";
+import {useEffect} from "react";
+import {ActivityIndicator} from "react-native-paper";
 
 function openCustomerPortal(callback: () => void) {
     const user = firebase.auth().currentUser
@@ -19,18 +18,10 @@ function openCustomerPortal(callback: () => void) {
 }
 
 export default function ({navigation}) {
-    const [loading, setLoading] = useState(true)
     useEffect(() => {
         openCustomerPortal(() => navigation.goBack())
-        setLoading(false)
     }, []);
     return (
-        <SafeAreaView style={{flex: 1}}>
-            {loading &&
-                <Portal>
-                    <ActivityIndicator size={"large"} style={{alignSelf: "center"}}/>
-                </Portal>
-            }
-        </SafeAreaView>
+        <ActivityIndicator size={"large"} style={{flex: 1, alignSelf: "center"}}/>
     )
 }
