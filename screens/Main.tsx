@@ -142,7 +142,7 @@ const Screen = ({navigation}) => {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [timeModalVisible, setTimeModalVisible] = useState<boolean>(false);
     const [dateModalVisible, setDateModalVisible] = useState<boolean>(false);
-    const [notificationSetModalVisible, setNotificationSetModalVisible] = useState<boolean>(false);
+    const [notificationModalVisible, setNotificationModalVisible] = useState<boolean>(false);
     const [depositModalVisible, setDepositModalVisible] = useState<boolean>(false);
     const [submitProofModalVisible, setSubmitProofModalVisible] = useState<boolean>(false);
     const [fileSubmittingTask, setFileSubmittingTask] = useState<Task>();
@@ -203,7 +203,7 @@ const Screen = ({navigation}) => {
             return updatedTask;
         });
         setDepositModalVisible(false);
-        setNotificationSetModalVisible(true);
+        setNotificationModalVisible(true);
     }
 
     function setNotificationBefore(notifyBefore: number) {
@@ -211,7 +211,7 @@ const Screen = ({navigation}) => {
             const updatedTask = {...currentTask};
             updatedTask.notifyBefore = notifyBefore;
             addTask(updatedTask);
-            setNotificationSetModalVisible(false);
+            setNotificationModalVisible(false);
             return null;
         });
     }
@@ -280,6 +280,13 @@ const Screen = ({navigation}) => {
         return true;
     }
 
+    function cancelAddTask() {
+        setTask(undefined);
+        setDateModalVisible(false);
+        setTimeModalVisible(false);
+        setDepositModalVisible(false);
+        setNotificationModalVisible(false);
+    }
 
     const addTask = (task: Task) => {
         setTasks((prevTasks) => {
@@ -319,14 +326,14 @@ const Screen = ({navigation}) => {
                 <TaskList tasks={tasks} deleteTask={deleteTask} markTaskComplete={markTaskComplete}
                           markTaskIncomplete={markTaskIncomplete}/>
             </View>
-            <DateSetModal visible={dateModalVisible} setVisible={setDateModalVisible} onConfirm={setDueDate}/>
+            <DateSetModal visible={dateModalVisible} onConfirm={setDueDate} onAbort={cancelAddTask}/>
             {timeModalVisible &&
-                <SetTimeModal visible={timeModalVisible} setVisible={setTimeModalVisible} onConfirm={setDueTime}/>}
-            {depositModalVisible && <SetDepositModal visible={depositModalVisible} setVisible={setDepositModalVisible}
-                                                     onConfirm={setDeposit}/>}
-            {notificationSetModalVisible &&
-                <SetNotificationModal visible={notificationSetModalVisible} onConfirm={setNotificationBefore}
-                                      setVisible={setNotificationSetModalVisible}/>}
+                <SetTimeModal visible={timeModalVisible} onConfirm={setDueTime} onAbort={cancelAddTask}/>}
+            {depositModalVisible &&
+                <SetDepositModal visible={depositModalVisible} onConfirm={setDeposit} onAbort={cancelAddTask}/>}
+            {notificationModalVisible &&
+                <SetNotificationModal visible={notificationModalVisible} onConfirm={setNotificationBefore}
+                                      onAbort={cancelAddTask}/>}
             <SubmitProofModal visible={submitProofModalVisible} setVisible={setSubmitProofModalVisible}
                               onSubmit={onFileSubmit} onDismiss={cancelFileSubmit}/>
             <GrantNotificationDialog/>

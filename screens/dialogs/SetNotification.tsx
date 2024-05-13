@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import {Button, Dialog, Portal, SegmentedButtons, TextInput} from "react-native-paper";
 
-export const SetNotificationModal = ({visible, setVisible, onConfirm}) => {
+export const SetNotificationModal = ({visible, onConfirm, onAbort}) => {
     const [days, setDays] = useState<number>();
     const [hours, setHours] = useState<number>();
     const [minutes, setMinutes] = useState<number>(30);
@@ -46,7 +46,7 @@ export const SetNotificationModal = ({visible, setVisible, onConfirm}) => {
 
     return (
         <Portal>
-            <Dialog visible={visible} onDismiss={() => onConfirm(undefined)}>
+            <Dialog visible={visible} onDismiss={onAbort}>
                 <Dialog.Title>いつ通知しますか？</Dialog.Title>
                 <Dialog.Content>
                     <SegmentedButtons
@@ -72,7 +72,7 @@ export const SetNotificationModal = ({visible, setVisible, onConfirm}) => {
                     />
                 </Dialog.Content>
                 <Dialog.Actions>
-                    <Button onPress={() => setVisible(false)}>キャンセル</Button>
+                    <Button onPress={onAbort}>キャンセル</Button>
                     <Button
                         onPress={onConfirmPressed}
                         disabled={!Boolean(days || minutes || hours)}
