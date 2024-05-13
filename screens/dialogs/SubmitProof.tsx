@@ -1,4 +1,4 @@
-import {ActivityIndicator, Button, Dialog, Icon, Portal, Text, TouchableRipple} from "react-native-paper";
+import {ActivityIndicator, Button, Dialog, Icon, Portal, Text, TextInput, TouchableRipple} from "react-native-paper";
 import {Alert, ImageBackground, Platform, StyleSheet, TouchableOpacity, View} from "react-native";
 import * as DocumentPicker from 'expo-document-picker';
 import {DocumentPickerResult} from 'expo-document-picker';
@@ -94,10 +94,11 @@ const FileSelectPlaceholder = ({selectedFile, onPress}: { selectedFile: ProofFil
 export const SubmitProofModal = ({visible, setVisible, onSubmit, onDismiss}) => {
     const [selectedFile, setSelectedFile] = useState<ProofFile>(null);
     const [submitting, setSubmitting] = useState(false);
+    const [fileDescription, setFileDescription] = useState<string>("");
 
     function onSubmitPressed() {
         setSubmitting(true);
-        onSubmit(selectedFile).then((res: boolean) => {
+        onSubmit(selectedFile, fileDescription).then((res: boolean) => {
             if (res === true) {
                 setSubmitting(false);
                 setSelectedFile(null);
@@ -127,6 +128,12 @@ export const SubmitProofModal = ({visible, setVisible, onSubmit, onDismiss}) => 
                             <FileSelectPlaceholder selectedFile={selectedFile}
                                                    onPress={() => launchDocumentPicker(setSelectedFile)}/>
                     }
+                    <TextInput
+                        style={{marginTop: 10}}
+                        label={"ファイルの説明（省略可）"}
+                        value={fileDescription}
+                        onChangeText={setFileDescription}
+                    />
                 </Dialog.Content>
                 <Dialog.Actions>
                     <Button onPress={() => setVisible(false)}>キャンセル</Button>

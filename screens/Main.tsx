@@ -232,12 +232,14 @@ const Screen = ({navigation}) => {
         setFileSubmittingTask(undefined)
     }
 
-    async function onFileSubmit(file: ProofFile) {
+    async function onFileSubmit(file: ProofFile, description: string) {
         firebase.storage().ref(`${auth().currentUser.uid}/${file.title || file.uri.split("/").pop()}`).putFile(
             file.uri,
             {
                 customMetadata: {
-                    taskId: fileSubmittingTask.id.toString()
+                    taskId: fileSubmittingTask.id.toString(),
+                    taskTitle: fileSubmittingTask.name,
+                    description: description
                 }
             }
         ).then(() => {
