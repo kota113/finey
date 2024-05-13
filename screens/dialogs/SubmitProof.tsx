@@ -95,65 +95,80 @@ export const SubmitProofModal = ({visible, setVisible, onSubmit, onDismiss}) => 
     const [selectedFile, setSelectedFile] = useState<ProofFile>(null);
     const [submitting, setSubmitting] = useState(false);
     const [fileDescription, setFileDescription] = useState<string>("");
+    const [noticeDialogVisible, setNoticeDialogVisible] = useState(false);
 
     function onSubmitPressed() {
         setSubmitting(true);
-        onSubmit(selectedFile, fileDescription).then((res: boolean) => {
-            if (res === true) {
-                setVisible(false);
-                setSubmitting(false);
-                setSelectedFile(null);
-                setFileDescription("");
-            }
+        onSubmit(selectedFile, fileDescription).then(() => {
+            setVisible(false);
+            setSubmitting(false);
+            setSelectedFile(null);
+            setFileDescription("");
+            setNoticeDialogVisible(true);
         })
     }
     return (
-        <Portal>
-            <Dialog
-                visible={visible}
-                onDismiss={onDismiss}
-                // disable dismiss when submitting
-                dismissable={!submitting}
-                dismissableBackButton={!submitting}
-            >
-                <Dialog.Title>お疲れさまです！</Dialog.Title>
-                <Dialog.Content>
-                    <Text>証明となる画像などはありますか？</Text>
-                    {submitting ?
-                        <ActivityIndicator size={"large"} style={styles.proofSubmitArea}/>
-                        :
-                        selectedFile?.thumbnail ?
-                            <ImageBackground
-                                source={{uri: selectedFile.thumbnail}}
-                                style={{...styles.proofSubmitArea, opacity: selectedFile ? 1 : 0}}
-                                imageStyle={{borderRadius: 20, resizeMode: "contain"}}
-                            >
-                                <TouchableOpacity style={{flex: 1, opacity: 0}}
-                                                  onPress={() => launchDocumentPicker(setSelectedFile)}/>
-                            </ImageBackground>
+        <>
+            <Portal>
+                <Dialog
+                    visible={visible}
+                    onDismiss={onDismiss}
+                    // disable dismiss when submitting
+                    dismissable={!submitting}
+                    dismissableBackButton={!submitting}
+                >
+                    <Dialog.Title>お疲れさまです！</Dialog.Title>
+                    <Dialog.Content>
+                        <Text>証明となる画像などはありますか？</Text>
+                        {submitting ?
+                            <ActivityIndicator size={"large"} style={styles.proofSubmitArea}/>
                             :
-                            <FileSelectPlaceholder selectedFile={selectedFile}
-                                                   onPress={() => launchDocumentPicker(setSelectedFile)}/>
-                    }
-                    <TextInput
-                        style={{marginTop: 10}}
-                        label={"ファイルの説明（省略可）"}
-                        value={fileDescription}
-                        onChangeText={setFileDescription}
-                        disabled={submitting}
-                    />
-                </Dialog.Content>
-                <Dialog.Actions>
-                    <Button onPress={() => setVisible(false)} disabled={submitting}>キャンセル</Button>
-                    <Button
-                        onPress={onSubmitPressed}
-                        disabled={!Boolean(selectedFile) || submitting}
-                    >
-                        送信
-                    </Button>
-                </Dialog.Actions>
-            </Dialog>
-        </Portal>
+                            selectedFile?.thumbnail ?
+                                <ImageBackground
+                                    source={{uri: selectedFile.thumbnail}}
+                                    style={{...styles.proofSubmitArea, opacity: selectedFile ? 1 : 0}}
+                                    imageStyle={{borderRadius: 20, resizeMode: "contain"}}
+                                >
+                                    <TouchableOpacity style={{flex: 1, opacity: 0}}
+                                                      onPress={() => launchDocumentPicker(setSelectedFile)}/>
+                                </ImageBackground>
+                                :
+                                <FileSelectPlaceholder selectedFile={selectedFile}
+                                                       onPress={() => launchDocumentPicker(setSelectedFile)}/>
+                        }
+                        <TextInput
+                            style={{marginTop: 10}}
+                            label={"ファイルの説明（省略可）"}
+                            value={fileDescription}
+                            onChangeText={setFileDescription}
+                            disabled={submitting}
+                        />
+                    </Dialog.Content>
+                    <Dialog.Actions>
+                        <Button onPress={() => setVisible(false)} disabled={submitting}>キャンセル</Button>
+                        <Button
+                            onPress={onSubmitPressed}
+                            disabled={!Boolean(selectedFile) || submitting}
+                        >
+                            送信
+                        </Button>
+                    </Dialog.Actions>
+                </Dialog>
+            </Portal>
+            <Portal>
+                <Dialog visible={noticeDialogVisible} onDismiss={() => setNoticeDialogVisible(false)}>
+                    <Dialog.Icon icon={"face-man-shimmer"} size={40} color={"#259707"}/>
+                    <Dialog.Title style={{textAlign: "center"}}>返金までお待ちください</Dialog.Title>
+                    <Dialog.Content>
+                        <Text style={{textAlign: "center"}}>AIと人間がファイルを見ています...</Text>
+                        <Text style={{textAlign: "center"}}>返金まで数日かかります。</Text>
+                    </Dialog.Content>
+                    <Dialog.Actions>
+                        <Button onPress={() => setNoticeDialogVisible(false)}>閉じる</Button>
+                    </Dialog.Actions>
+                </Dialog>
+            </Portal>
+        </>
     )
 }
 
