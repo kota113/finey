@@ -97,14 +97,18 @@ export const SubmitProofModal = ({visible, setVisible, onSubmit, onDismiss}) => 
     const [fileDescription, setFileDescription] = useState<string>("");
     const [noticeDialogVisible, setNoticeDialogVisible] = useState(false);
 
+    function initialize() {
+        setSubmitting(false);
+        setSelectedFile(null);
+        setFileDescription("");
+        setNoticeDialogVisible(true);
+    }
+
     function onSubmitPressed() {
         setSubmitting(true);
         onSubmit(selectedFile, fileDescription).then(() => {
             setVisible(false);
-            setSubmitting(false);
-            setSelectedFile(null);
-            setFileDescription("");
-            setNoticeDialogVisible(true);
+            initialize()
         })
     }
     return (
@@ -112,7 +116,10 @@ export const SubmitProofModal = ({visible, setVisible, onSubmit, onDismiss}) => 
             <Portal>
                 <Dialog
                     visible={visible}
-                    onDismiss={onDismiss}
+                    onDismiss={() => {
+                        initialize()
+                        onDismiss();
+                    }}
                     // disable dismiss when submitting
                     dismissable={!submitting}
                     dismissableBackButton={!submitting}
