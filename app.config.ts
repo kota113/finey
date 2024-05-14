@@ -17,7 +17,7 @@ export default {
         ios: {
             supportsTablet: true,
             bundleIdentifier: "com.kota113.Finey",
-            googleServicesFile: process.env.GOOGLE_SERVICE_INFO_PLIST
+            googleServicesFile: process.env.GOOGLE_SERVICE_INFO_PLIST || "./creds/GoogleService-Info.plist",
         },
         android: {
             adaptiveIcon: {
@@ -26,7 +26,7 @@ export default {
             },
             package: "com.kota113.Finey",
             // change based on build
-            googleServicesFile: process.env.GOOGLE_SERVICES_JSON,
+            googleServicesFile: process.env.GOOGLE_SERVICES_JSON || "./creds/GoogleService-Info.plist",
             permissions: [
                 'android.permission.SCHEDULE_EXACT_ALARM'
             ]
