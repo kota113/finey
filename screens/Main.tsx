@@ -245,6 +245,17 @@ const Screen = ({navigation}) => {
                 }
             }
         ).then(async () => {
+            const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/mark-task-as-completed`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': 'Bearer ' + await auth().currentUser.getIdToken()
+                },
+                body: JSON.stringify({id: fileSubmittingTask.id})
+            })
+            if (!res.ok) {
+                console.error("Failed to mark task as complete")
+            }
             const newTasks = tasks.map(t => {
                 if (t.id === fileSubmittingTask.id) {
                     t.isCompleted = true;
