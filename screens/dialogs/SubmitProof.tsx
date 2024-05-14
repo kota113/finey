@@ -101,7 +101,6 @@ export const SubmitProofModal = ({visible, setVisible, onSubmit, onDismiss}) => 
         setSubmitting(false);
         setSelectedFile(null);
         setFileDescription("");
-        setNoticeDialogVisible(true);
     }
 
     function onSubmitPressed() {
@@ -109,6 +108,7 @@ export const SubmitProofModal = ({visible, setVisible, onSubmit, onDismiss}) => 
         onSubmit(selectedFile, fileDescription).then(() => {
             setVisible(false);
             initialize()
+            setNoticeDialogVisible(true);
         })
     }
     return (
