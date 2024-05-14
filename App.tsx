@@ -15,6 +15,7 @@ import {GoogleSignin} from "@react-native-google-signin/google-signin";
 import {getFirestore, initializeFirestore} from "@react-native-firebase/firestore/lib/modular";
 import storage from '@react-native-firebase/storage';
 import {materialTheme} from "./materialTheme";
+import * as Sentry from "@sentry/react-native";
 
 const Stack = createNativeStackNavigator();
 
@@ -32,6 +33,18 @@ const GlobalTheme: Theme = {
         card: materialTheme.colors.surface,
     },
 };
+
+Sentry.init({
+    dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+    // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
+    // We recommend adjusting this value in production.
+    tracesSampleRate: 1.0,
+    _experiments: {
+        // profilesSampleRate is relative to tracesSampleRate.
+        // Here, we'll capture profiles for 100% of transactions.
+        profilesSampleRate: 1.0,
+    },
+});
 
 
 const StackNavigator = () => {
@@ -74,8 +87,8 @@ const StackNavigator = () => {
     )
 }
 
-// noinspection JSUnusedGlobalSymbols
-export default function App() {
+
+function App() {
     return (
         <PaperProvider>
             <StackNavigator/>
@@ -84,4 +97,7 @@ export default function App() {
     );
 }
 
-AppRegistry.registerComponent(config.expo.name, () => App);
+// noinspection JSUnusedGlobalSymbols
+export default Sentry.wrap(App);
+
+AppRegistry.registerComponent(config.expo.name, () => Sentry.wrap(App));
