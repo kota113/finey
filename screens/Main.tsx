@@ -152,8 +152,8 @@ const Screen = ({navigation}) => {
         getData("tasks").then((tasks) => {
             if (tasks) {
                 // convert dueDate to Date object
-                tasks = tasks.map((task: Task) => {
-                    task.dueDate = new Date(task.dueDate);
+                tasks = tasks.map((task: object) => {
+                    task["dueDate"] = task["dueDate"].toDate();
                     return task;
                 });
                 setTasks(tasks);

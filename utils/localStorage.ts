@@ -19,7 +19,7 @@ const _storeLocalData = async (key: string, value: any) => {
 const getData = async (key: string) => {
     const res = await firebase.firestore().collection(key).doc(auth().currentUser.uid).get()
     const data = res.data()
-    if (data && data.length > 0) {
+    if (data && data.data.length > 0) {
         return data.data
     } else {
         return _getLocalData(key)
