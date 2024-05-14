@@ -150,7 +150,6 @@ const Screen = ({navigation}) => {
 
     useEffect(() => {
         getData("tasks").then((tasks) => {
-            console.log(tasks)
             if (tasks) {
                 // convert dueDate to Date object
                 tasks = tasks.map((task: Task) => {
@@ -265,7 +264,6 @@ const Screen = ({navigation}) => {
             });
             setTasks(newTasks);
             await storeData("tasks", newTasks);
-            console.log("stored to local storage");
         })
     }
 
@@ -288,7 +286,7 @@ const Screen = ({navigation}) => {
             return t;
         });
         setTasks(newTasks);
-        storeData("tasks", newTasks).then(() => console.log("stored"));
+        storeData("tasks", newTasks).then();
         return true;
     }
 
