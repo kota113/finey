@@ -1,5 +1,5 @@
 import React from 'react';
-import {Alert, Animated, Dimensions, StatusBar, StyleSheet, Text, View,} from 'react-native';
+import {Alert, Animated, Dimensions, Platform, StatusBar, StyleSheet, Text, View,} from 'react-native';
 import {ExpandingDot} from 'react-native-animated-pagination-dots';
 import {Button, Dialog, IconButton, Portal, TextInput} from "react-native-paper";
 import {GoogleSignin} from "@react-native-google-signin/google-signin";
@@ -116,6 +116,8 @@ const LoginElements = ({navigation}) => {
                 <TextInput
                     style={{marginTop: 10}}
                     label={"メールアドレス"}
+                    autoComplete={"email"}
+                    textContentType={"emailAddress"}
                     value={email}
                     onChangeText={setEmail}
                 />
@@ -123,6 +125,8 @@ const LoginElements = ({navigation}) => {
                     style={{marginTop: 10}}
                     label={"パスワード"}
                     secureTextEntry
+                    autoComplete={Platform.OS === "android" ? "password" : "current-password"}
+                    textContentType={"password"}
                     value={password}
                     onChangeText={setPassword}
                 />
