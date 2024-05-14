@@ -71,7 +71,6 @@ const StackNavigator = () => {
                 <Stack.Screen name="Help" component={Setup} options={{headerShown: false}}/>
             </Stack.Navigator>
         </NavigationContainer>
-
     )
 }
 

@@ -16,6 +16,7 @@
     "@react-native-google-signin/google-signin": "^11.0.1",
     "@react-navigation/drawer": "^6.6.15",
     "@react-navigation/native-stack": "^6.9.26",
+    "@stripe/stripe-react-native": "^0.37.3",
     "expo": "^51.0.2",
     "expo-build-properties": "~0.12.1",
     "expo-constants": "~16.0.1",

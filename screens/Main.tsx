@@ -12,6 +12,7 @@ import {GrantNotificationDialog} from "./dialogs/GrantNotification";
 import auth, {firebase} from "@react-native-firebase/auth";
 import '@react-native-firebase/storage';
 import {ProofFile, Task} from "../types";
+import SetupPayment from "./dialogs/SetupPayment";
 
 
 const TopAppBar = ({navigation}) => (
@@ -337,6 +338,7 @@ const Screen = ({navigation}) => {
             <SubmitProofModal visible={submitProofModalVisible} setVisible={setSubmitProofModalVisible}
                               onSubmit={onFileSubmit} onDismiss={cancelFileSubmit}/>
             <GrantNotificationDialog/>
+            <SetupPayment/>
         </SafeAreaView>
     );
 };
