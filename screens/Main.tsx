@@ -291,18 +291,33 @@ const Screen = ({navigation}) => {
 
     const addTask = (task: Task) => {
         setTasks((prevTasks) => {
-            // notify certain time before due date
-            const notificationDate = new Date(task.dueDate.getTime() - task.notifyBefore);
-            Notifications.scheduleNotificationAsync({
-                content: {
-                    title: "期限が近づいています",
-                    body: task.name,
-                },
-                trigger: notificationDate,
-            }).then((id) => {
-                task.notificationId = id;
-            })
-            storeData("tasks", [...prevTasks, task]).then(() => console.log("stored"));
+            storeData("tasks", [...prevTasks, task]).then(() => {
+                auth().currentUser.getIdToken().then((token) => {
+                    fetch(`${process.env.EXPO_PUBLIC_API_URL}/add-task`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            'Authorization': 'Bearer ' + token
+                        },
+                        body: JSON.stringify({id: task.id})
+                    }).then((res) => {
+                        if (!res.ok) {
+                            console.error("Failed to execute payment")
+                        } else console.log("payment completed")
+                    });
+                })
+                // notify certain time before due date
+                const notificationDate = new Date(task.dueDate.getTime() - task.notifyBefore);
+                Notifications.scheduleNotificationAsync({
+                    content: {
+                        title: "期限が近づいています",
+                        body: task.name,
+                    },
+                    trigger: notificationDate,
+                }).then((id) => {
+                    task.notificationId = id;
+                })
+            });
             return [...prevTasks, task]
         });
     }
