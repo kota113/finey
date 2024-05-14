@@ -41,49 +41,51 @@ async function onGoogleButtonPress(navigation: any) {
 }
 
 async function onEmailButtonPress(email: string, password: string, navigation: any, showDialog: () => void) {
-    auth()
-        .createUserWithEmailAndPassword(email, password)
-        .then((user) => {
-            if (!user.user.emailVerified) {
-                user.user.sendEmailVerification().then(() => {
-                    user.user.getIdToken().then(token => {
-                        fetch(`${process.env.EXPO_PUBLIC_API_URL}/register`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': 'Bearer ' + token
-                            }
-                        }).then(() => {
-                            showDialog()
-                        })
-                    })
-                })
-            }
-        })
-        .catch(error => {
-            if (error.code === 'auth/email-already-in-use') {
-                // login if email already exists
-                auth().signInWithEmailAndPassword(email, password)
-                    .then((user) => {
-                        storeData("user", user.user.toJSON()).then(() => {
-                            Alert.prompt("ログインしました")
-                            navigation.reset({
-                                index: 0,
-                                routes: [{name: 'AppDrawer'}]
+    return (
+        auth()
+            .createUserWithEmailAndPassword(email, password)
+            .then((user) => {
+                if (!user.user.emailVerified) {
+                    user.user.sendEmailVerification().then(() => {
+                        user.user.getIdToken().then(token => {
+                            fetch(`${process.env.EXPO_PUBLIC_API_URL}/register`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': 'Bearer ' + token
+                                }
+                            }).then(() => {
+                                showDialog()
                             })
                         })
                     })
-                    .catch(() => {
-                        Alert.alert('エラー', 'メールアドレスまたはパスワードが間違っています');
-                    });
-            }
+                }
+            })
+            .catch(error => {
+                if (error.code === 'auth/email-already-in-use') {
+                    // login if email already exists
+                    auth().signInWithEmailAndPassword(email, password)
+                        .then((user) => {
+                            storeData("user", user.user.toJSON()).then(() => {
+                                Alert.prompt("ログインしました")
+                                navigation.reset({
+                                    index: 0,
+                                    routes: [{name: 'AppDrawer'}]
+                                })
+                            })
+                        })
+                        .catch(() => {
+                            Alert.alert('エラー', 'メールアドレスまたはパスワードが間違っています');
+                        });
+                }
 
-            if (error.code === 'auth/invalid-email') {
-                Alert.alert('エラー', 'メールアドレスが無効です');
-            }
+                if (error.code === 'auth/invalid-email') {
+                    Alert.alert('エラー', 'メールアドレスが無効です');
+                }
 
-            console.error(error);
-        });
+                console.error(error);
+            })
+    )
 }
 
 
@@ -116,6 +118,7 @@ const LoginElements = ({navigation}) => {
                 <TextInput
                     style={{marginTop: 10}}
                     label={"メールアドレス"}
+                    disabled={emailLoginLoading}
                     autoComplete={"email"}
                     textContentType={"emailAddress"}
                     value={email}
@@ -124,6 +127,7 @@ const LoginElements = ({navigation}) => {
                 <TextInput
                     style={{marginTop: 10}}
                     label={"パスワード"}
+                    disabled={emailLoginLoading}
                     secureTextEntry
                     autoComplete={Platform.OS === "android" ? "password" : "current-password"}
                     textContentType={"password"}
