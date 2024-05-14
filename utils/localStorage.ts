@@ -5,7 +5,7 @@ import auth, {firebase} from "@react-native-firebase/auth";
 // todo: remove localStorage
 
 const storeData = async (key: string, value: any) => {
-    await firebase.firestore().collection(key).doc(auth().currentUser.uid).set({data: value})
+    await firebase.firestore().collection(key).doc(auth().currentUser.uid).set({data: value}).then(() => console.log("Data stored"))
     await _storeLocalData(key, value)
 }
 
