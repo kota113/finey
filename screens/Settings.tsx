@@ -1,11 +1,15 @@
 import {FlatList, SafeAreaView} from "react-native";
-import {Appbar, List} from "react-native-paper";
+import {Appbar, List, Snackbar, Text} from "react-native-paper";
+import * as Linking from "expo-linking";
+import appConfig from "../app.config";
+import {useState} from "react";
 
 
 interface SettingsItem {
     label: string,
     icon: string,
-    value: string
+    screen?: string,
+    onPress?: () => void
 }
 
 
@@ -17,42 +21,59 @@ const TopAppBar = ({navigation}) => (
 )
 
 const Settings = ({navigation}: { navigation: any }) => {
+    const [snackbarVisible, setSnackbarVisible] = useState(false);
     const settings: SettingsItem[] = [
         {
             label: "通知",
             icon: "bell",
-            value: "オン"
+            onPress: () => Linking.openSettings()
         },
-        {
-            label: "言語",
-            icon: "translate",
-            value: "日本語"
-        },
-        {
-            label: "テーマ",
-            icon: "palette",
-            value: "ライト"
-        },
+        // {
+        //     label: "言語",
+        //     icon: "translate",
+        //     screen: "日本語"
+        // },
+        // {
+        //     label: "テーマ",
+        //     icon: "palette",
+        //     screen: "ライト"
+        // },
         {
             label: "バージョン",
             icon: "information",
-            value: "1.0.0"
+            onPress: () => setSnackbarVisible(true)
         }
     ]
     return (
-        <FlatList
-            data={settings}
-            keyExtractor={(item) => item.label}
-            renderItem={
-                ({item}) => (
-                    <List.Item
-                        style={{paddingHorizontal: 10, paddingVertical: 10}}
-                        title={item.label}
-                        left={props => <List.Icon {...props} icon={item.icon}/>}
-                    />
-                )
-            }
-        />
+        <>
+            <FlatList
+                data={settings}
+                keyExtractor={(item) => item.label}
+                renderItem={
+                    ({item}) => (
+                        <List.Item
+                            style={{paddingHorizontal: 10, paddingVertical: 10}}
+                            title={item.label}
+                            left={props => <List.Icon {...props} icon={item.icon}/>}
+                            onPress={item.onPress ? item.onPress : () => {
+                                navigation.navigate(item.screen)
+                            }}
+                        />
+                    )
+                }
+            />
+            <Snackbar
+                visible={snackbarVisible}
+                onDismiss={() => setSnackbarVisible(false)}
+                action={{
+                    label: 'OK',
+                    onPress: () => {
+                        setSnackbarVisible(false)
+                    },
+                }}>
+                <Text style={{color: "white"}}>バージョン {appConfig.expo.version}</Text>
+            </Snackbar>
+        </>
     )
 }
 

@@ -183,11 +183,11 @@ const ButtonNavigation = ({navigation}) => {
             image: require('../assets/appImage3.jpg'),
             backgroundColor: '#7370cf',
         },
-        {
+        ...(auth().currentUser ? [] : [{
             text: "はじめましょう",
             backgroundColor: '#db4747',
             element: (<LoginElements navigation={navigation}/>)
-        },
+        }])
     ];
 
     const imageW = width * 0.7;

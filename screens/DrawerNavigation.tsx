@@ -64,7 +64,7 @@ const DrawerContent = ({navigation}) => {
             icon: 'cog-outline'
         },
         {
-            label: 'ヘルプ',
+            label: 'アプリについて',
             screen: 'Help',
             icon: 'help-circle-outline'
         },
