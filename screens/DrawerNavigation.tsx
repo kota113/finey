@@ -5,6 +5,8 @@ import {FlatList, StyleSheet, View} from "react-native";
 import {registerTranslation} from "react-native-paper-dates";
 import * as Notifications from "expo-notifications";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
+import auth from "@react-native-firebase/auth";
+import {clearLocalStorage} from "../utils/localStorage";
 
 
 registerTranslation('ja', {
@@ -65,6 +67,20 @@ const DrawerContent = ({navigation}) => {
             label: 'ヘルプ',
             screen: 'Help',
             icon: 'help-circle-outline'
+        },
+        {
+            label: 'ログアウト',
+            onPress: () => {
+                auth().signOut().then(() => {
+                    clearLocalStorage().then(() =>
+                        navigation.reset({
+                            index: 0,
+                            routes: [{name: 'Setup'}]
+                        })
+                    )
+                })
+            },
+            icon: 'logout'
         }
     ]
 
