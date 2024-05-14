@@ -4,7 +4,6 @@ import {ExpandingDot} from 'react-native-animated-pagination-dots';
 import {Button, Dialog, IconButton, Portal, TextInput} from "react-native-paper";
 import {GoogleSignin} from "@react-native-google-signin/google-signin";
 import auth from '@react-native-firebase/auth';
-import {storeData} from "../utils/localStorage";
 
 const {width} = Dimensions.get('screen');
 
@@ -30,12 +29,10 @@ async function onGoogleButtonPress(navigation: any) {
     // Sign-in the user with the credential
     return auth().signInWithCredential(googleCredential)
         .then((user) => {
-            storeData("user", user.user.toJSON()).then(() =>
-                navigation.reset({
-                    index: 0,
-                    routes: [{name: 'AppDrawer'}]
-                })
-            )
+            navigation.reset({
+                index: 0,
+                routes: [{name: 'AppDrawer'}]
+            })
         })
         .catch((error) => console.log(error));
 }
@@ -66,12 +63,10 @@ async function onEmailButtonPress(email: string, password: string, navigation: a
                     // login if email already exists
                     auth().signInWithEmailAndPassword(email, password)
                         .then((user) => {
-                            storeData("user", user.user.toJSON()).then(() => {
-                                Alert.prompt("ログインしました")
-                                navigation.reset({
-                                    index: 0,
-                                    routes: [{name: 'AppDrawer'}]
-                                })
+                            Alert.prompt("ログインしました")
+                            navigation.reset({
+                                index: 0,
+                                routes: [{name: 'AppDrawer'}]
                             })
                         })
                         .catch(() => {
