@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {SafeAreaView, ScrollView, View} from "react-native";
-import {Appbar, Chip, IconButton, List, TextInput} from "react-native-paper";
+import {Appbar, Chip, IconButton, List, TextInput, Tooltip} from "react-native-paper";
 import {getData, storeData} from "../utils/localStorage";
 import * as Notifications from "expo-notifications";
 import {SetDepositModal} from "./dialogs/SetDeposit";
@@ -24,6 +24,8 @@ const TopAppBar = ({navigation}) => (
 
 
 const TaskListItem = ({index, task, deleteTask, markTaskComplete, markTaskIncomplete}) => {
+    // if the due is closer than 1 day, disable the delete button
+    const deleteTaskEnabled: boolean = task.dueDate.getTime() - Date.now() > 24 * 60 * 60 * 1000;
     const Description = () => (
         <View style={{flexDirection: "row", width: "70%"}}>
             <Chip
@@ -60,8 +62,13 @@ const TaskListItem = ({index, task, deleteTask, markTaskComplete, markTaskIncomp
             title={task.name}
             titleStyle={{marginLeft: 5, marginBottom: 5}}
             description={Description}
-            right={props => <IconButton {...props} icon="delete"
-                                        onPress={() => deleteTask(task)}/>}
+            disabled={deleteTaskEnabled}
+            right={props => (
+                <Tooltip title={deleteTaskEnabled ? "期限まで1日以下なので削除できません" : "削除"}>
+                    <IconButton {...props} icon="delete"
+                                onPress={() => deleteTask(task)}/>
+                </Tooltip>
+            )}
             left={props => <IconButton {...props}
                                        icon={task.isCompleted ? "checkbox-marked-circle-outline" : "checkbox-blank-circle-outline"}
                                        onPress={onCheckPress}/>}
