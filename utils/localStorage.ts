@@ -15,10 +15,10 @@ const storeTasks = async (tasks: Task[]) => {
     return await firebase.firestore().collection("tasks").doc(auth().currentUser.uid).set({data: tasks}).then(() => console.log("Data stored"))
 }
 
-const storeData = async (key: string, value: any) => {
-    await firebase.firestore().collection(key).doc(auth().currentUser.uid).set({data: value}).then(() => console.log("Data stored"))
-    await _storeLocalData(key, value)
-}
+// const storeData = async (key: string, value: any) => {
+//     await firebase.firestore().collection(key).doc(auth().currentUser.uid).set({data: value}).then(() => console.log("Data stored"))
+//     await _storeLocalData(key, value)
+// }
 
 const _storeLocalData = async (key: string, value: any) => {
     // make it json string if it's not a string
@@ -63,15 +63,15 @@ const getTasks = async () => {
     }
 }
 
-const getData = async (key: string) => {
-    const res = await firebase.firestore().collection(key).doc(auth().currentUser.uid).get()
-    const data = res.data()
-    if (data && data.data.length > 0) {
-        return data.data
-    } else {
-        return _getLocalData(key)
-    }
-}
+// const getData = async (key: string) => {
+//     const res = await firebase.firestore().collection(key).doc(auth().currentUser.uid).get()
+//     const data = res.data()
+//     if (data && data.data.length > 0) {
+//         return data.data
+//     } else {
+//         return _getLocalData(key)
+//     }
+// }
 
 const _getLocalData = async (key: string) => {
     const value = await AsyncStorage.getItem(key);
@@ -87,4 +87,4 @@ const clearLocalStorage = async () => {
     await AsyncStorage.clear()
 }
 
-export {storeTasks, storeData, getTasks, getData, clearLocalStorage}
+export {storeTasks, getTasks, getData, clearLocalStorage}
