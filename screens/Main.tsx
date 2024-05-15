@@ -183,7 +183,7 @@ const Screen = ({navigation}) => {
         });
     }
 
-    function setDueTime(params: any) {
+    function setDueTime(params: { hours: number, minutes: number }) {
         setTask((currentTask) => {
             const updatedTask = {...currentTask};
             const date = new Date(currentTask.dueDate);
@@ -362,8 +362,8 @@ const Screen = ({navigation}) => {
                           markTaskIncomplete={markTaskIncomplete}/>
             </View>
             <DateSetModal visible={dateModalVisible} onConfirm={setDueDate} onAbort={cancelAddTask}/>
-            {timeModalVisible &&
-                <SetTimeModal visible={timeModalVisible} onConfirm={setDueTime} onAbort={cancelAddTask}/>}
+            <SetTimeModal date={task?.dueDate} setVisible={setTimeModalVisible} visible={timeModalVisible}
+                          onConfirm={setDueTime} onAbort={cancelAddTask}/>
             {depositModalVisible &&
                 <SetDepositModal visible={depositModalVisible} onConfirm={setDeposit} onAbort={cancelAddTask}/>}
             {notificationModalVisible &&

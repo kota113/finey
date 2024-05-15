@@ -4,6 +4,9 @@ import React from "react";
 export const DateSetModal = ({visible, onConfirm, onAbort}) => {
     return (
         <DatePickerModal
+            validRange={{
+                startDate: new Date()
+            }}
             locale='ja'
             mode={"single"}
             presentationStyle={"pageSheet"}
