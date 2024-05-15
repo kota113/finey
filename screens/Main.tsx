@@ -69,9 +69,12 @@ const TaskListItem = ({index, task, deleteTask, markTaskComplete, markTaskIncomp
                                 onPress={() => deleteTask(task)}/>
                 </Tooltip>
             )}
-            left={props => <IconButton {...props}
-                                       icon={task.isCompleted ? "checkbox-marked-circle-outline" : "checkbox-blank-circle-outline"}
-                                       onPress={onCheckPress}/>}
+            left={props =>
+                <IconButton {...props}
+                            icon={task.isCompleted ? "checkbox-marked-circle-outline" : "checkbox-blank-circle-outline"}
+                            onPress={onCheckPress}
+                />
+            }
         />
     )
 }
