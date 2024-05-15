@@ -2,7 +2,7 @@ import "@react-native-firebase/firestore"
 import {Timestamp} from "@react-native-firebase/firestore/lib/modular/Timestamp";
 
 export interface Task {
-    id: number;
+    id: string;
     name: string;
     isCompleted: boolean;
     deposit: number;
@@ -13,7 +13,7 @@ export interface Task {
 
 // dueDate is stored in a Timestamp, not a Date
 export interface TaskFromFirebase {
-    id: number;
+    id: string;
     name: string;
     isCompleted: boolean;
     deposit: number;
@@ -24,7 +24,7 @@ export interface TaskFromFirebase {
 
 // dueDate is stored in a string, not a Date
 export interface TaskFromLocalStorage {
-    id: number;
+    id: string;
     name: string;
     isCompleted: boolean;
     deposit: number;

@@ -13,6 +13,7 @@ import auth, {firebase} from "@react-native-firebase/auth";
 import '@react-native-firebase/storage';
 import {ProofFile, Task} from "../types";
 import SetupPayment from "./dialogs/SetupPayment";
+import uuid from 'react-native-uuid';
 
 
 const TopAppBar = ({navigation}) => (
@@ -172,7 +173,7 @@ const Screen = ({navigation}) => {
 
     function onTextChange(text: string) {
         setTask({
-            id: tasks.length,
+            id: uuid.v4() as string,
             name: text,
             isCompleted: false,
             deposit: 0,
