@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {SafeAreaView, ScrollView, View} from "react-native";
 import {Appbar, Chip, IconButton, List, TextInput, Tooltip} from "react-native-paper";
-import {getData, storeData} from "../utils/localStorage";
+import {getTasks, storeTasks} from "../utils/localStorage";
 import * as Notifications from "expo-notifications";
 import {SetDepositModal} from "./dialogs/SetDeposit";
 import {SetNotificationModal} from "./dialogs/SetNotification";
@@ -159,16 +159,12 @@ const Screen = ({navigation}) => {
     const [fileSubmittingTask, setFileSubmittingTask] = useState<Task>();
 
     useEffect(() => {
-        getData("tasks").then((tasks) => {
-            if (tasks) {
-                // convert dueDate to Date object
-                tasks = tasks.map((task: object) => {
-                    task["dueDate"] = task["dueDate"].toDate();
-                    return task;
-                });
-                setTasks(tasks);
-            }
-        })
+        async function fetchTask() {
+            const data = await getTasks();
+            setTasks(data);
+        }
+
+        fetchTask().then()
     }, []);
 
     function onTextChange(text: string) {
@@ -273,7 +269,7 @@ const Screen = ({navigation}) => {
                 return t;
             });
             setTasks(newTasks);
-            await storeData("tasks", newTasks);
+            await storeTasks(newTasks);
         })
     }
 
@@ -296,7 +292,7 @@ const Screen = ({navigation}) => {
             return t;
         });
         setTasks(newTasks);
-        storeData("tasks", newTasks).then();
+        storeTasks(newTasks).then();
         return true;
     }
 
@@ -310,7 +306,7 @@ const Screen = ({navigation}) => {
 
     const addTask = (task: Task) => {
         setTasks((prevTasks) => {
-            storeData("tasks", [...prevTasks, task]).then(() => {
+            storeTasks([...prevTasks, task]).then(() => {
                 auth().currentUser.getIdToken().then((token) => {
                     fetch(`${process.env.EXPO_PUBLIC_API_URL}/add-task`, {
                         method: "POST",
@@ -345,7 +341,7 @@ const Screen = ({navigation}) => {
         const newTasks = tasks.filter(t => t.id !== task.id)
         if (!task.isCompleted) Notifications.cancelScheduledNotificationAsync(task.notificationId).then(() => console.log("cancelled"));
         setTasks(newTasks);
-        storeData("tasks", newTasks).then(() => console.log("stored"));
+        storeTasks(newTasks).then(() => console.log("stored"));
     };
 
     return (
