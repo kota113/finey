@@ -97,7 +97,7 @@ const TaskList = ({tasks, deleteTask, markTaskComplete, markTaskIncomplete}) => 
 
     // Convert the groups object to an array of sections
     let sections = Object.keys(groupedTasks).map(date => ({
-        title: `${new Date(date).getMonth()}月${new Date(date).getDate()}日(${["日", "月", "火", "水", "木", "金", "土"][new Date(date).getDay()]})`,
+        title: `${new Date(date).getMonth() + 1}月${new Date(date).getDate()}日(${["日", "月", "火", "水", "木", "金", "土"][new Date(date).getDay()]})`,
         data: groupedTasks[date].sort((a: Task, b: Task) => a.dueDate.getTime() - b.dueDate.getTime()) // Sort tasks by time within each group
     }));
 
