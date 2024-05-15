@@ -71,13 +71,18 @@ const DrawerContent = ({navigation}) => {
         {
             label: 'ログアウト',
             onPress: () => {
-                auth().signOut().then(() => {
-                    clearLocalStorage().then(() =>
-                        navigation.reset({
-                            index: 0,
-                            routes: [{name: 'Setup'}]
-                        })
-                    )
+                // unsubscribe from all notifications
+                Notifications.cancelAllScheduledNotificationsAsync().then(() => {
+                    // sign out from firebase
+                    auth().signOut().then(() => {
+                        // clear local storage
+                        clearLocalStorage().then(() =>
+                            navigation.reset({
+                                index: 0,
+                                routes: [{name: 'Setup'}]
+                            })
+                        )
+                    })
                 })
             },
             icon: 'logout'
