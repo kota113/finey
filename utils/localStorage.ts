@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth, {firebase} from "@react-native-firebase/auth";
-import {Task} from "../types";
+import {Task, TaskFromFirebase, TaskFromLocalStorage} from "../types";
 import * as Notifications from "expo-notifications";
 
 
@@ -31,33 +31,41 @@ const getTasks = async () => {
     const data = res.data()
     if (data && data.data.length > 0) {
         const firebaseData = data.data
-        const localData = await _getLocalData("tasks")
+        const _localData: TaskFromLocalStorage[] = await _getLocalData("tasks") || []
+        // convert TaskFromLocalStorage to Task. Ensure dueDate is a Date
+        const localData: Task[] = _localData.map((task: TaskFromLocalStorage) => {
+            return {...task, dueDate: new Date(task.dueDate)}
+        })
         // SYNC TASKS
         // check all tasks, and if there's a task that's not in the local storage, add it
         // if there's a task that's not in the firebase, remove it
-        firebaseData.forEach((task: Task | object) => {
-            if (!localData.find((localTask: Task) => localTask.id === task["id"])) {
+        firebaseData.forEach((taskFromFirebase: TaskFromFirebase) => {
+            const task: Task = {
+                ...taskFromFirebase,
+                dueDate: taskFromFirebase.dueDate.toDate(),
+            };
+            if (!localData.find((localTask: Task) => localTask.id === task.id)) {
                 // add notification and set notificationId to task
-                const notificationDate = new Date(task["dueDate"].getTime() - task["notifyBefore"]);
+                const notificationDate = new Date(task.dueDate.getTime() - task.notifyBefore);
                 Notifications.scheduleNotificationAsync({
                     content: {
                         title: "期限が近づいています",
-                        body: task["name"],
+                        body: task.name,
                     },
                     trigger: notificationDate,
                 }).then((id) => {
-                    task["notificationId"] = id;
+                    task.notificationId = id;
                 })
                 localData.push(task)
             } else if (!firebaseData.find((firebaseTask: Task) => firebaseTask.id === task["id"])) {
                 // remove notification
-                task["notificationId"] && Notifications.cancelScheduledNotificationAsync(task["notificationId"])
-                localData.splice(localData.findIndex((localTask: Task) => localTask.id === task["id"]), 1)
+                task.notificationId && Notifications.cancelScheduledNotificationAsync(task.notificationId)
+                localData.splice(localData.findIndex((localTask) => localTask.id === task.id), 1)
             }
-            task["dueDate"] = task["dueDate"].toDate();
+            console.log(task.dueDate)
         })
         await storeTasks(localData)
-        return data.data
+        return localData
     } else {
         return []
     }
@@ -87,4 +95,4 @@ const clearLocalStorage = async () => {
     await AsyncStorage.clear()
 }
 
-export {storeTasks, getTasks, getData, clearLocalStorage}
+export {storeTasks, getTasks, clearLocalStorage}
