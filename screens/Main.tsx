@@ -25,7 +25,7 @@ const TopAppBar = ({navigation}) => (
 
 const TaskListItem = ({index, task, deleteTask, markTaskComplete, markTaskIncomplete}) => {
     // if the due is closer than 1 day, disable the delete button
-    const deleteTaskEnabled: boolean = task.dueDate.getTime() - Date.now() > 24 * 60 * 60 * 1000;
+    const deleteTaskDisabled: boolean = Boolean(task.dueDate.getTime() - Date.now() <= 24 * 60 * 60 * 1000);
     const Description = () => (
         <View style={{flexDirection: "row", width: "70%"}}>
             <Chip
@@ -62,10 +62,13 @@ const TaskListItem = ({index, task, deleteTask, markTaskComplete, markTaskIncomp
             title={task.name}
             titleStyle={{marginLeft: 5, marginBottom: 5}}
             description={Description}
-            disabled={deleteTaskEnabled}
+            disabled={deleteTaskDisabled}
             right={props => (
-                <Tooltip title={deleteTaskEnabled ? "期限まで1日以下なので削除できません" : "削除"}>
-                    <IconButton {...props} icon="delete"
+                <Tooltip
+                    title={deleteTaskDisabled ? "期限まで1日以下です。削除できません。" : "削除"}
+                    {...(deleteTaskDisabled ? {enterTouchDelay: 50} : {})}
+                >
+                    <IconButton {...props} icon="delete" disabled={deleteTaskDisabled}
                                 onPress={() => deleteTask(task)}/>
                 </Tooltip>
             )}
