@@ -28,7 +28,7 @@ async function onGoogleButtonPress(navigation: any) {
 
     // Sign-in the user with the credential
     return auth().signInWithCredential(googleCredential)
-        .then((user) => {
+        .then(() => {
             navigation.reset({
                 index: 0,
                 routes: [{name: 'AppDrawer'}]
@@ -62,8 +62,8 @@ async function onEmailButtonPress(email: string, password: string, navigation: a
                 if (error.code === 'auth/email-already-in-use') {
                     // login if email already exists
                     auth().signInWithEmailAndPassword(email, password)
-                        .then((user) => {
-                            Alert.prompt("ログインしました")
+                        .then(() => {
+                            Alert.alert("ログインしました")
                             navigation.reset({
                                 index: 0,
                                 routes: [{name: 'AppDrawer'}]
@@ -97,7 +97,7 @@ const LoginElements = ({navigation}) => {
                     style={{borderRadius: 7}}
                     icon={"google"}
                     mode={"contained-tonal"}
-                    onPress={() => onGoogleButtonPress(navigation).then(() => Alert.prompt("ログインしました")).catch((error) => console.log(error))}
+                    onPress={() => onGoogleButtonPress(navigation).then(() => Alert.alert("ログインしました")).catch((error) => console.log(error))}
                 >
                     Googleでログイン・登録
                 </Button>

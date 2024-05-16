@@ -1,5 +1,5 @@
 import {ActivityIndicator, Button, Dialog, Icon, Portal, Text, TextInput, TouchableRipple} from "react-native-paper";
-import {Alert, ImageBackground, Platform, StyleSheet, TouchableOpacity, View} from "react-native";
+import {Alert, ImageBackground, StyleSheet, TouchableOpacity, View} from "react-native";
 import * as DocumentPicker from 'expo-document-picker';
 import {DocumentPickerResult} from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
@@ -31,33 +31,29 @@ function launchDocumentPicker(setSelectedFile: (file: ProofFile) => void) {
         }
     }
 
-    if (Platform.OS === "ios") {
-        Alert.prompt("どちらを選択しますか？", "", [
-            {
-                text: "キャンセル",
-                onPress: () => {
-                },
-                style: "cancel"
+    Alert.alert("どちらを選択しますか？", "", [
+        {
+            text: "キャンセル",
+            onPress: () => {
             },
-            {
-                text: "画像・動画",
-                onPress: () => {
-                    ImagePicker.launchImageLibraryAsync({
-                        allowsEditing: true,
-                        allowsMultipleSelection: false,
-                    }).then(onSelected)
-                },
+            style: "cancel"
+        },
+        {
+            text: "画像・動画",
+            onPress: () => {
+                ImagePicker.launchImageLibraryAsync({
+                    allowsEditing: true,
+                    allowsMultipleSelection: false,
+                }).then(onSelected)
             },
-            {
-                text: "ファイル",
-                onPress: () => {
-                    DocumentPicker.getDocumentAsync().then(onSelected)
-                },
-            }
-        ])
-    } else {
-        DocumentPicker.getDocumentAsync().then(onSelected)
-    }
+        },
+        {
+            text: "ファイル",
+            onPress: () => {
+                DocumentPicker.getDocumentAsync().then(onSelected)
+            },
+        }
+    ])
 }
 
 
