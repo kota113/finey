@@ -2,7 +2,6 @@ import {Animated, FlatList, LayoutAnimation, Platform, SafeAreaView, StyleSheet,
 import {Appbar, Chip, Text} from "react-native-paper";
 import React, {useRef, useState} from "react";
 
-
 // Enable Layout Animation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -16,7 +15,6 @@ interface ListItem {
 }
 
 type ChipStatus = "paid" | "refunded" | "pending";
-
 
 const TopAppBar = ({navigation}) => (
     <Appbar.Header>
@@ -38,7 +36,7 @@ const AnimatedListItem = ({item, animationRef}: { item: ListItem, animationRef: 
 };
 
 const HistoryContainer = ({navigation}) => {
-    const [chipsSelected, setChipsSelected] = useState<ChipStatus[]>([])
+    const [chipsSelected, setChipsSelected] = useState<ChipStatus[]>([]);
     const animationRefs = {
         paid: useRef(new Animated.Value(1)).current,
         refunded: useRef(new Animated.Value(1)).current,
@@ -53,15 +51,18 @@ const HistoryContainer = ({navigation}) => {
     const animateItems = (status: string, visible: boolean) => {
         const ref = animationRefs[status as ChipStatus];
         if (visible) {
+            // Animate the layout changes before setting visibility to true
+            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+            setItems(prevItems => prevItems.map(item =>
+                item.status === status ? {...item, visible: true} : item
+            ));
+
             // Start fade-in animation
             Animated.timing(ref, {
                 toValue: 1, // Target opacity value: 1
                 duration: 200, // Duration of the animation in milliseconds
                 useNativeDriver: true,
-            }).start(() => {
-                // Animate the layout changes
-                LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-            });
+            }).start();
         } else {
             // Start fade-out animation
             Animated.timing(ref, {
@@ -69,8 +70,11 @@ const HistoryContainer = ({navigation}) => {
                 duration: 200, // Duration of the animation in milliseconds
                 useNativeDriver: true,
             }).start(() => {
-                // Animate the layout changes
+                // Animate the layout changes after fade-out is complete
                 LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                setItems(prevItems => prevItems.map(item =>
+                    item.status === status ? {...item, visible: false} : item
+                ));
             });
         }
     };
@@ -79,39 +83,38 @@ const HistoryContainer = ({navigation}) => {
         chipsSelected.includes(pressedChip) ?
             setChipsSelected(
                 (currentValue) => {
-                    const newChips: ChipStatus[] = currentValue.filter((chip) => chip !== pressedChip)
-                    applyFilter(newChips)
-                    return newChips
+                    const newChips: ChipStatus[] = currentValue.filter((chip) => chip !== pressedChip);
+                    applyFilter(newChips);
+                    return newChips;
                 }
             )
             :
             setChipsSelected((currentValue) => {
-                const newChips: ChipStatus[] = [...currentValue, pressedChip]
-                applyFilter(newChips)
-                return newChips
-            })
+                const newChips: ChipStatus[] = [...currentValue, pressedChip];
+                applyFilter(newChips);
+                return newChips;
+            });
     }
 
     const applyFilter = (chips: ChipStatus[]) => {
-        console.log(chips)
+        console.log(chips);
         if (chips.length === 0) {
             setItems(items.map((item) => {
-                animateItems(item.status, true)
-                return {...item, visible: true}
-            }))
-            return
+                animateItems(item.status, true);
+                return {...item, visible: true};
+            }));
         } else {
             setItems(items.map((item) => {
                 if (!chips.includes(item.status)) {
-                    animateItems(item.status, false)
-                    return {...item, visible: false}
+                    animateItems(item.status, false);
+                    return {...item, visible: false};
                 } else {
-                    animateItems(item.status, true)
-                    return {...item, visible: true}
+                    animateItems(item.status, true);
+                    return {...item, visible: true};
                 }
-            }))
+            }));
         }
-    }
+    };
 
     return (
         <View style={styles.container}>
@@ -158,15 +161,14 @@ const HistoryContainer = ({navigation}) => {
     );
 };
 
-
 export default ({navigation}) => {
     return (
         <SafeAreaView style={{flex: 1}}>
             <TopAppBar navigation={navigation}/>
             <HistoryContainer navigation={navigation}/>
         </SafeAreaView>
-    )
-}
+    );
+};
 
 const styles = StyleSheet.create({
     item: {
