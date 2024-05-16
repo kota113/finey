@@ -118,7 +118,7 @@ const FilterChips = ({chipsSelected, onChipPress}: {
     </>
 )
 
-const HistoryContainer = ({navigation}) => {
+const HistoryContainer = () => {
     const [chipsSelected, setChipsSelected] = useState<ChipStatus[]>(['paid', 'refunded', 'pending']);
     const [loading, setLoading] = useState(true);
     const animationRefs = {
@@ -276,7 +276,7 @@ export default ({navigation}) => {
     return (
         <SafeAreaView style={{flex: 1}}>
             <TopAppBar navigation={navigation}/>
-            <HistoryContainer navigation={navigation}/>
+            <HistoryContainer/>
         </SafeAreaView>
     );
 };
