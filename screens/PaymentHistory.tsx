@@ -108,7 +108,7 @@ const FilterChips = ({chipsSelected, onChipPress}: {
     </>
 )
 
-const HistoryContainer = () => {
+const HistoryContainer = ({navigation}) => {
     const [chipsSelected, setChipsSelected] = useState<ChipStatus[]>(['paid', 'refunded', 'pending']);
     const [loading, setLoading] = useState(true);
     const animationRefs = {
@@ -132,6 +132,7 @@ const HistoryContainer = () => {
             if (!data.ok) {
                 console.error("Failed to fetch payments history");
                 Alert.alert("エラー", "決済履歴の取得に失敗しました。");
+                navigation.goBack()
                 return;
             }
             const json = await data.json();
@@ -216,11 +217,13 @@ const HistoryContainer = () => {
         }
     };
 
+    const dateToSectionKey = (date: Date) => (`${date.getFullYear() !== new Date().getFullYear() ? (date.getFullYear() + '年') : ""}${date.getMonth() + 1}月${date.getDate()}日`)
+
     function transformData(items: ListItem[]): { title: string; data: ListItem[] }[] {
         const grouped: { [key: string]: ListItem[] } = {};
 
         items.forEach((item) => {
-            const dateKey = `${item.paidDate.getFullYear() !== new Date().getFullYear() ? (item.paidDate.getFullYear() + '年') : ""}${item.paidDate.getMonth() + 1}月${item.paidDate.getDate()}日`;
+            const dateKey = dateToSectionKey(item.paidDate);
             if (!grouped[dateKey]) {
                 grouped[dateKey] = [];
             }
@@ -248,12 +251,17 @@ const HistoryContainer = () => {
                             <AnimatedListItem item={item} animationRef={animationRefs[item.status]}/>
                         )}
                         renderSectionHeader={({section: {title}}) => (
-                            <Text style={{
-                                fontWeight: 'bold',
-                                fontSize: 20,
-                                marginTop: 20,
-                                marginBottom: 5
-                            }}>{title}</Text>
+                            // hide section header if all items in the section are filtered out
+                            items.some((item) => dateToSectionKey(item.paidDate) === title && item.visible) ?
+                                (
+                                    <Text style={{
+                                        fontWeight: 'bold',
+                                        fontSize: 20,
+                                        marginTop: 20,
+                                        marginBottom: 5
+                                    }}>{title}</Text>
+                                ) :
+                                <></>
                         )}
                     />
                 </>
@@ -266,7 +274,7 @@ export default ({navigation}) => {
     return (
         <View style={{flex: 1}}>
             <TopAppBar navigation={navigation}/>
-            <HistoryContainer/>
+            <HistoryContainer navigation={navigation}/>
         </View>
     );
 };
