@@ -16,6 +16,7 @@ import {getFirestore, initializeFirestore} from "@react-native-firebase/firestor
 import storage from '@react-native-firebase/storage';
 import {materialTheme} from "./materialTheme";
 import * as Sentry from "@sentry/react-native";
+import PaymentHistory from "./screens/PaymentHistory";
 
 const Stack = createNativeStackNavigator();
 
@@ -82,6 +83,7 @@ const StackNavigator = () => {
                 <Stack.Screen name="EditPayment" component={EditPayment} options={{headerShown: false}}/>
                 <Stack.Screen name="Setup" component={Setup} options={{headerShown: false}}/>
                 <Stack.Screen name="Help" component={Setup} options={{headerShown: false}}/>
+                <Stack.Screen name="PaymentHistory" component={PaymentHistory} options={{headerShown: false}}/>
             </Stack.Navigator>
         </NavigationContainer>
     )

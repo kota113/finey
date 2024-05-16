@@ -59,6 +59,11 @@ const DrawerContent = ({navigation}) => {
             icon: 'credit-card'
         },
         {
+            label: '決済履歴',
+            screen: 'PaymentHistory',
+            icon: "history"
+        },
+        {
             label: '設定',
             screen: 'Settings',
             icon: 'cog-outline'
