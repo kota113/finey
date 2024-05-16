@@ -1,5 +1,14 @@
-import {Animated, FlatList, LayoutAnimation, Platform, SafeAreaView, StyleSheet, UIManager, View} from "react-native";
-import {Appbar, Chip, Text} from "react-native-paper";
+import {
+    Animated,
+    LayoutAnimation,
+    Platform,
+    SafeAreaView,
+    SectionList,
+    StyleSheet,
+    UIManager,
+    View
+} from "react-native";
+import {Appbar, Chip, Icon, Text, useTheme} from "react-native-paper";
 import React, {useRef, useState} from "react";
 
 // Enable Layout Animation on Android
@@ -8,8 +17,10 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 interface ListItem {
-    id: string,
-    text: string,
+    updatedDate: Date,
+    taskName: string,
+    taskId: string,
+    amount: number,
     status: ChipStatus,
     visible: boolean
 }
@@ -24,28 +35,104 @@ const TopAppBar = ({navigation}) => (
 )
 
 const AnimatedListItem = ({item, animationRef}: { item: ListItem, animationRef: Animated.Value }) => {
+    const theme = useTheme()
+    const itemIcon = item.status === "paid" ? "cash" : item.status === "refunded" ? "restore" : "timer-sand";
+    const InfoChips = () => (
+        <View style={{flexDirection: "row", marginTop: 5}}>
+            <Chip icon={itemIcon} mode={"outlined"} style={{marginRight: 5}}>
+                {item.status === "paid" ? "支払済み" : item.status === "refunded" ? "返金済み" : "処理中"}・
+                {item.updatedDate.getFullYear()}/{item.updatedDate.getMonth() + 1}/{item.updatedDate.getDate()}
+            </Chip>
+        </View>
+    )
     return (
         <>
             {item.visible && (
-                <Animated.View style={{...styles.item, opacity: animationRef}}>
-                    <Text>{item.text}</Text>
+                <Animated.View
+                    style={{...styles.item, opacity: animationRef, backgroundColor: theme.colors.surfaceVariant}}>
+                    <Icon size={33} source={itemIcon}/>
+                    <View style={{flex: 1, marginLeft: 10, flexDirection: "column"}}>
+                        <Text
+                            variant={"titleMedium"}
+                        >
+                            {item.taskName}
+                        </Text>
+                        <InfoChips/>
+                    </View>
+                    <Text
+                        variant={"titleLarge"}
+                        style={item.status === 'refunded' && {
+                            textDecorationLine: "line-through",
+                            textDecorationStyle: "solid"
+                        }}
+                    >
+                        {item.amount}円
+                    </Text>
                 </Animated.View>
             )}
         </>
     );
 };
 
+const FilterChips = ({chipsSelected, onChipPress}: {
+    chipsSelected: ChipStatus[],
+    onChipPress: (status: ChipStatus) => void
+}) => (
+    <>
+        <Chip
+            style={styles.chip}
+            selected={chipsSelected.includes("paid")}
+            showSelectedCheck={true}
+            showSelectedOverlay={true}
+            onPress={() => {
+                onChipPress("paid")
+            }}
+        >
+            支払済み
+        </Chip>
+        <Chip
+            style={styles.chip}
+            selected={chipsSelected.includes("refunded")}
+            showSelectedCheck={true}
+            showSelectedOverlay={true}
+            onPress={() => {
+                onChipPress("refunded")
+            }}
+        >
+            返金済み
+        </Chip>
+        <Chip
+            style={styles.chip}
+            selected={chipsSelected.includes("pending")}
+            showSelectedCheck={true}
+            showSelectedOverlay={true}
+            onPress={() => {
+                onChipPress("pending")
+            }}
+        >
+            処理中
+        </Chip>
+    </>
+)
+
 const HistoryContainer = ({navigation}) => {
-    const [chipsSelected, setChipsSelected] = useState<ChipStatus[]>([]);
+    const [chipsSelected, setChipsSelected] = useState<ChipStatus[]>(['paid', 'refunded', 'pending']);
     const animationRefs = {
         paid: useRef(new Animated.Value(1)).current,
         refunded: useRef(new Animated.Value(1)).current,
         pending: useRef(new Animated.Value(1)).current,
     }
     const [items, setItems] = useState<ListItem[]>([
-        {id: '1', text: 'Item 1', status: 'paid', visible: true},
-        {id: '2', text: 'Item 2', status: 'refunded', visible: true},
-        {id: '3', text: 'Item 3', status: 'pending', visible: true},
+        {updatedDate: new Date(), taskId: '1', taskName: 'ベイズ統計', status: 'paid', amount: 1000, visible: true},
+        {updatedDate: new Date(), taskId: '2', taskName: '料理', status: 'refunded', amount: 1000, visible: true},
+        {
+            updatedDate: new Date(),
+            taskId: '3',
+            taskName: '部屋の片付け',
+            status: 'pending',
+            amount: 1000,
+            visible: true
+        },
     ]);
 
     const animateItems = (status: string, visible: boolean) => {
@@ -116,46 +203,37 @@ const HistoryContainer = ({navigation}) => {
         }
     };
 
+    function transformData(items: ListItem[]): { title: string; data: ListItem[] }[] {
+        const grouped: { [key: string]: ListItem[] } = {};
+
+        items.forEach((item) => {
+            const dateKey = `${item.updatedDate.getFullYear() !== new Date().getFullYear() ? (item.updatedDate.getFullYear() + '年') : ""}${item.updatedDate.getMonth() + 1}月${item.updatedDate.getDate()}日`;
+            if (!grouped[dateKey]) {
+                grouped[dateKey] = [];
+            }
+            grouped[dateKey].push(item);
+        });
+
+        return Object.keys(grouped).map((key) => ({
+            title: key,
+            data: grouped[key],
+        }));
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.chipContainer}>
-                <Chip
-                    style={styles.chip}
-                    selected={chipsSelected.includes("paid")}
-                    showSelectedCheck={true}
-                    onPress={() => {
-                        onChipPress("paid")
-                    }}
-                >
-                    支払済み
-                </Chip>
-                <Chip
-                    style={styles.chip}
-                    selected={chipsSelected.includes("refunded")}
-                    showSelectedCheck={true}
-                    onPress={() => {
-                        onChipPress("refunded")
-                    }}
-                >
-                    返金済み
-                </Chip>
-                <Chip
-                    style={styles.chip}
-                    selected={chipsSelected.includes("pending")}
-                    showSelectedCheck={true}
-                    onPress={() => {
-                        onChipPress("pending")
-                    }}
-                >
-                    処理中
-                </Chip>
+                <FilterChips chipsSelected={chipsSelected} onChipPress={onChipPress}/>
             </View>
-            <FlatList
-                data={items}
+            <SectionList
+                sections={transformData(items)}
+                keyExtractor={(item) => item.taskId}
                 renderItem={({item}) => (
                     <AnimatedListItem item={item} animationRef={animationRefs[item.status]}/>
                 )}
-                keyExtractor={(item) => item.id}
+                renderSectionHeader={({section: {title}}) => (
+                    <Text style={{fontWeight: 'bold', fontSize: 20, marginTop: 20, marginBottom: 5}}>{title}</Text>
+                )}
             />
         </View>
     );
@@ -172,10 +250,13 @@ export default ({navigation}) => {
 
 const styles = StyleSheet.create({
     item: {
-        padding: 10,
+        paddingHorizontal: 15,
+        paddingVertical: 20,
+        alignItems: "center",
         marginVertical: 8,
-        backgroundColor: '#f9c2ff',
-        borderRadius: 5,
+        borderRadius: 10,
+        flex: 1,
+        flexDirection: "row",
     },
     container: {
         flex: 1,
