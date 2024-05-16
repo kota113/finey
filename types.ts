@@ -9,6 +9,7 @@ export interface Task {
     dueDate: Date;
     notificationId: string;
     notifyBefore: number;
+    proofFileRef?: string;
 }
 
 // dueDate is stored in a Timestamp, not a Date

@@ -1,4 +1,5 @@
 import {
+    Alert,
     Animated,
     LayoutAnimation,
     Platform,
@@ -8,8 +9,9 @@ import {
     UIManager,
     View
 } from "react-native";
-import {Appbar, Chip, Icon, Text, useTheme} from "react-native-paper";
-import React, {useRef, useState} from "react";
+import {ActivityIndicator, Appbar, Chip, Icon, Text, useTheme} from "react-native-paper";
+import React, {useEffect, useRef, useState} from "react";
+import auth from "@react-native-firebase/auth";
 
 // Enable Layout Animation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -17,6 +19,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 interface ListItem {
+    paidDate: Date,
     updatedDate: Date,
     taskName: string,
     taskId: string,
@@ -41,7 +44,7 @@ const AnimatedListItem = ({item, animationRef}: { item: ListItem, animationRef: 
         <View style={{flexDirection: "row", marginTop: 5}}>
             <Chip icon={itemIcon} mode={"outlined"} style={{marginRight: 5}}>
                 {item.status === "paid" ? "支払済み" : item.status === "refunded" ? "返金済み" : "処理中"}・
-                {item.updatedDate.getFullYear()}/{item.updatedDate.getMonth() + 1}/{item.updatedDate.getDate()}
+                {item.paidDate.getFullYear()}/{item.paidDate.getMonth() + 1}/{item.paidDate.getDate()}
             </Chip>
         </View>
     )
@@ -66,7 +69,7 @@ const AnimatedListItem = ({item, animationRef}: { item: ListItem, animationRef: 
                             textDecorationStyle: "solid"
                         }}
                     >
-                        {item.amount}円
+                        ¥{item.amount}
                     </Text>
                 </Animated.View>
             )}
@@ -117,23 +120,43 @@ const FilterChips = ({chipsSelected, onChipPress}: {
 
 const HistoryContainer = ({navigation}) => {
     const [chipsSelected, setChipsSelected] = useState<ChipStatus[]>(['paid', 'refunded', 'pending']);
+    const [loading, setLoading] = useState(true);
     const animationRefs = {
         paid: useRef(new Animated.Value(1)).current,
         refunded: useRef(new Animated.Value(1)).current,
         pending: useRef(new Animated.Value(1)).current,
     }
-    const [items, setItems] = useState<ListItem[]>([
-        {updatedDate: new Date(), taskId: '1', taskName: 'ベイズ統計', status: 'paid', amount: 1000, visible: true},
-        {updatedDate: new Date(), taskId: '2', taskName: '料理', status: 'refunded', amount: 1000, visible: true},
-        {
-            updatedDate: new Date(),
-            taskId: '3',
-            taskName: '部屋の片付け',
-            status: 'pending',
-            amount: 1000,
-            visible: true
-        },
-    ]);
+    const [items, setItems] = useState<ListItem[]>([]);
+
+    useEffect(() => {
+        async function fetchData() {
+            const data = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/payments-history`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${await auth().currentUser.getIdToken()}`
+                    }
+                }
+            )
+            if (!data.ok) {
+                console.error("Failed to fetch payments history");
+                Alert.alert("エラー", "決済履歴の取得に失敗しました。");
+                return;
+            }
+            const json = await data.json();
+            // convert date strings to Date objects
+            json["charges"].forEach((charge: ListItem) => {
+                charge.paidDate = new Date(charge.paidDate);
+                charge.updatedDate = new Date(charge.updatedDate);
+            });
+            setItems(json["charges"]);
+            setLoading(false);
+            console.log("Fetched payments history");
+        }
+
+        fetchData().then()
+    }, []);
 
     const animateItems = (status: string, visible: boolean) => {
         const ref = animationRefs[status as ChipStatus];
@@ -207,7 +230,7 @@ const HistoryContainer = ({navigation}) => {
         const grouped: { [key: string]: ListItem[] } = {};
 
         items.forEach((item) => {
-            const dateKey = `${item.updatedDate.getFullYear() !== new Date().getFullYear() ? (item.updatedDate.getFullYear() + '年') : ""}${item.updatedDate.getMonth() + 1}月${item.updatedDate.getDate()}日`;
+            const dateKey = `${item.paidDate.getFullYear() !== new Date().getFullYear() ? (item.paidDate.getFullYear() + '年') : ""}${item.paidDate.getMonth() + 1}月${item.paidDate.getDate()}日`;
             if (!grouped[dateKey]) {
                 grouped[dateKey] = [];
             }
@@ -222,19 +245,29 @@ const HistoryContainer = ({navigation}) => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.chipContainer}>
-                <FilterChips chipsSelected={chipsSelected} onChipPress={onChipPress}/>
-            </View>
-            <SectionList
-                sections={transformData(items)}
-                keyExtractor={(item) => item.taskId}
-                renderItem={({item}) => (
-                    <AnimatedListItem item={item} animationRef={animationRefs[item.status]}/>
-                )}
-                renderSectionHeader={({section: {title}}) => (
-                    <Text style={{fontWeight: 'bold', fontSize: 20, marginTop: 20, marginBottom: 5}}>{title}</Text>
-                )}
-            />
+            {loading ?
+                <ActivityIndicator size="large" style={{flex: 1, alignSelf: "center"}}/> :
+                <>
+                    <View style={styles.chipContainer}>
+                        <FilterChips chipsSelected={chipsSelected} onChipPress={onChipPress}/>
+                    </View>
+                    <SectionList
+                        sections={transformData(items)}
+                        keyExtractor={(item) => item.taskId}
+                        renderItem={({item}) => (
+                            <AnimatedListItem item={item} animationRef={animationRefs[item.status]}/>
+                        )}
+                        renderSectionHeader={({section: {title}}) => (
+                            <Text style={{
+                                fontWeight: 'bold',
+                                fontSize: 20,
+                                marginTop: 20,
+                                marginBottom: 5
+                            }}>{title}</Text>
+                        )}
+                    />
+                </>
+            }
         </View>
     );
 };

@@ -268,6 +268,7 @@ const Screen = ({navigation}) => {
             const newTasks = tasks.map(t => {
                 if (t.id === fileSubmittingTask.id) {
                     t.isCompleted = true;
+                    t.proofFileRef = fileRef;
                     Notifications.cancelScheduledNotificationAsync(t.notificationId).then(() => console.log("cancelled"));
                 }
                 return t;
