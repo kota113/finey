@@ -1,4 +1,4 @@
-import {FlatList, SafeAreaView} from "react-native";
+import {FlatList, View} from "react-native";
 import {Appbar, List, Snackbar, Text} from "react-native-paper";
 import * as Linking from "expo-linking";
 import appConfig from "../app.config";
@@ -80,9 +80,9 @@ const Settings = ({navigation}: { navigation: any }) => {
 
 export default function Screen({navigation}: { navigation: any }) {
     return (
-        <SafeAreaView style={{flex: 1}}>
+        <View style={{flex: 1}}>
             <TopAppBar navigation={navigation}/>
             <Settings navigation={navigation}/>
-        </SafeAreaView>
+        </View>
     )
 }

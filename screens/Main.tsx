@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {SafeAreaView, ScrollView, View} from "react-native";
+import {ScrollView, View} from "react-native";
 import {Appbar, Chip, IconButton, List, TextInput, Tooltip} from "react-native-paper";
 import {getTasks, storeTasks} from "../utils/localStorage";
 import * as Notifications from "expo-notifications";
@@ -350,7 +350,7 @@ const Screen = ({navigation}) => {
     };
 
     return (
-        <SafeAreaView style={{flex: 1}}>
+        <View style={{flex: 1}}>
             <TopAppBar navigation={navigation}/>
             <View style={{flex: 1, padding: 20}}>
                 <TextInput
@@ -374,7 +374,7 @@ const Screen = ({navigation}) => {
                               onSubmit={onFileSubmit} onDismiss={cancelFileSubmit}/>
             <GrantNotificationDialog/>
             <SetupPayment/>
-        </SafeAreaView>
+        </View>
     );
 };
 

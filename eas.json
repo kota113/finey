@@ -21,7 +21,13 @@
         "EXPO_PUBLIC_SENTRY_DSN": "https://5fe728516b166fb3f246a9b81085374b@o4507253678866432.ingest.us.sentry.io/4507253681750016"
       }
     },
-    "production": {}
+    "production": {
+      "distribution": "store",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://finey-api.kota113.com",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://5fe728516b166fb3f246a9b81085374b@o4507253678866432.ingest.us.sentry.io/4507253681750016"
+      }
+    }
   },
   "submit": {
     "production": {}

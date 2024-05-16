@@ -1,14 +1,4 @@
-import {
-    Alert,
-    Animated,
-    LayoutAnimation,
-    Platform,
-    SafeAreaView,
-    SectionList,
-    StyleSheet,
-    UIManager,
-    View
-} from "react-native";
+import {Alert, Animated, LayoutAnimation, Platform, SectionList, StyleSheet, UIManager, View} from "react-native";
 import {ActivityIndicator, Appbar, Chip, Icon, Text, useTheme} from "react-native-paper";
 import React, {useEffect, useRef, useState} from "react";
 import auth from "@react-native-firebase/auth";
@@ -274,10 +264,10 @@ const HistoryContainer = () => {
 
 export default ({navigation}) => {
     return (
-        <SafeAreaView style={{flex: 1}}>
+        <View style={{flex: 1}}>
             <TopAppBar navigation={navigation}/>
             <HistoryContainer/>
-        </SafeAreaView>
+        </View>
     );
 };
 
