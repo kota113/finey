@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {ScrollView, View} from "react-native";
-import {Appbar, Chip, IconButton, List, TextInput, Tooltip} from "react-native-paper";
+import {Appbar, Chip, IconButton, List, TextInput, Tooltip, useTheme} from "react-native-paper";
 import {getTasks, storeTasks} from "../utils/localStorage";
 import * as Notifications from "expo-notifications";
 import {SetDepositModal} from "./dialogs/SetDeposit";
@@ -24,18 +24,27 @@ const TopAppBar = ({navigation}) => (
 )
 
 
-const TaskListItem = ({index, task, deleteTask, markTaskComplete, markTaskIncomplete}) => {
+const TaskListItem = ({index, task, deleteTask, markTaskComplete, markTaskIncomplete}: {
+    index: number,
+    task: Task,
+    deleteTask: (task: Task) => void,
+    markTaskComplete: (task: Task) => void,
+    markTaskIncomplete: (task: Task) => void
+}) => {
     // if the due is closer than 1 day, disable the delete button
-    const deleteTaskDisabled: boolean = Boolean(task.dueDate.getTime() - Date.now() <= 24 * 60 * 60 * 1000);
+    const remainingTime = task.dueDate.getTime() - Date.now()
+    const deleteTaskDisabled: boolean = Boolean(remainingTime <= 24 * 60 * 60 * 1000) && Boolean(0 <= remainingTime);
+    const isTaskOutdated: boolean = Boolean(remainingTime < 0);
     const Description = () => (
         <View style={{flexDirection: "row", width: "70%"}}>
             <Chip
                 style={{marginHorizontal: 3, marginVertical: 3}}
                 icon="alarm"
                 mode={"outlined"}
-                disabled={task.isCompleted}
+                disabled={task.isCompleted || isTaskOutdated}
             >
-                {!task.isCompleted ?
+                {/* if tasks is in not in main section, show date */}
+                {(!task.isCompleted && !isTaskOutdated) ?
                     task.dueDate?.toLocaleTimeString([], {hour: "numeric", minute: "numeric"})
                     :
                     task.dueDate?.toLocaleString(["ja"], {
@@ -47,7 +56,7 @@ const TaskListItem = ({index, task, deleteTask, markTaskComplete, markTaskIncomp
                 }
             </Chip>
             <Chip style={{marginHorizontal: 3, marginVertical: 3}} icon="currency-jpy" mode={"outlined"}
-                  disabled={task.isCompleted}>{task.deposit?.toLocaleString()}</Chip>
+                  disabled={task.isCompleted || isTaskOutdated}>{task.deposit?.toLocaleString()}</Chip>
         </View>
     )
 
@@ -61,22 +70,37 @@ const TaskListItem = ({index, task, deleteTask, markTaskComplete, markTaskIncomp
         <List.Item
             key={index}
             title={task.name}
-            titleStyle={{marginLeft: 5, marginBottom: 5}}
+            titleStyle={{
+                marginLeft: 5,
+                marginBottom: 5,
+                color: (isTaskOutdated) ? "grey" : undefined,
+                textDecorationLine: (!task.isCompleted && isTaskOutdated) ? 'line-through' : 'none'
+            }}
             description={Description}
             disabled={deleteTaskDisabled}
             right={props => (
-                <Tooltip
-                    title={deleteTaskDisabled ? "期限まで1日以下です。削除できません。" : "削除"}
-                    {...(deleteTaskDisabled ? {enterTouchDelay: 50} : {})}
-                >
-                    <IconButton {...props} icon="delete" disabled={deleteTaskDisabled}
-                                onPress={() => deleteTask(task)}/>
-                </Tooltip>
+                // if the due is closer than 1 day, disable the delete button
+                deleteTaskDisabled ? (
+                        <Tooltip
+                            title={"期限まで1日以下です。削除できません。"}
+                            enterTouchDelay={50}
+                        >
+                            <IconButton {...props} icon="delete" disabled={deleteTaskDisabled}
+                                        onPress={() => deleteTask(task)}/>
+                        </Tooltip>
+                    ) :
+                    // show delete button only for ongoing tasks with a due date further than 1 day
+                    (
+                        <IconButton {...props} icon="delete" disabled={!Boolean(!task.isCompleted && !isTaskOutdated)}
+                                    onPress={() => deleteTask(task)}/>
+                    )
             )}
             left={props =>
-                <IconButton {...props}
-                            icon={task.isCompleted ? "checkbox-marked-circle-outline" : "checkbox-blank-circle-outline"}
-                            onPress={onCheckPress}
+                <IconButton
+                    {...props}
+                    disabled={isTaskOutdated}
+                    icon={task.isCompleted ? "checkbox-marked-circle-outline" : "checkbox-blank-circle-outline"}
+                    onPress={onCheckPress}
                 />
             }
         />
@@ -85,12 +109,19 @@ const TaskListItem = ({index, task, deleteTask, markTaskComplete, markTaskIncomp
 
 
 const TaskList = ({tasks, deleteTask, markTaskComplete, markTaskIncomplete}) => {
+    const theme = useTheme()
+
+    // Filter out outdated tasks
+    const outdatedTasks = tasks.filter((task: Task) => (task.dueDate.getTime() < new Date().getTime()) && !task.isCompleted);
+
     // Filter out completed tasks
     const completedTasks = tasks.filter((task: Task) => task.isCompleted);
+
 
     // Group tasks by due date
     const groupedTasks = tasks.reduce((groups: object, task: Task) => {
         if (task.isCompleted) return groups; // Don't group completed tasks
+        if (outdatedTasks.includes(task)) return groups; // Don't group completed tasks
         const date = task.dueDate.toISOString().split('T')[0]; // Get the date part of the timestamp
         if (!groups[date]) {
             groups[date] = [];
@@ -136,6 +167,20 @@ const TaskList = ({tasks, deleteTask, markTaskComplete, markTaskIncomplete}) => 
             {completedTasks.length > 0 &&
                 <List.Accordion title={"完了済み"}>
                     {completedTasks.map((task: Task, index: number) => (
+                        <TaskListItem
+                            key={index}
+                            index={index}
+                            task={task}
+                            deleteTask={deleteTask}
+                            markTaskComplete={markTaskComplete}
+                            markTaskIncomplete={markTaskIncomplete}
+                        />
+                    ))}
+                </List.Accordion>
+            }
+            {outdatedTasks.length > 0 &&
+                <List.Accordion title={"期限切れ"} titleStyle={{color: theme.colors.error}}>
+                    {outdatedTasks.map((task: Task, index: number) => (
                         <TaskListItem
                             key={index}
                             index={index}
