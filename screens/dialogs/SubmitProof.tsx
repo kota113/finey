@@ -1,5 +1,5 @@
 import {ActivityIndicator, Button, Dialog, Icon, Portal, Text, TextInput, TouchableRipple} from "react-native-paper";
-import {Alert, ImageBackground, StyleSheet, TouchableOpacity, View} from "react-native";
+import {ImageBackground, StyleSheet, TouchableOpacity, View} from "react-native";
 import * as DocumentPicker from 'expo-document-picker';
 import {DocumentPickerResult} from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
@@ -8,7 +8,14 @@ import {useState} from "react";
 import {ProofFile} from "../../types";
 
 
-function launchDocumentPicker(setSelectedFile: (file: ProofFile) => void) {
+function launchDocumentPicker(setSelectedFile: (file: ProofFile) => void, type: "media" | "document") {
+    if (type === "media") {
+        ImagePicker.launchImageLibraryAsync({
+            allowsMultipleSelection: false,
+        }).then(onSelected)
+    } else {
+        DocumentPicker.getDocumentAsync().then(onSelected)
+    }
     function onSelected(result: ImagePickerResult | DocumentPickerResult) {
         if (result.canceled) {
             return;
@@ -30,30 +37,6 @@ function launchDocumentPicker(setSelectedFile: (file: ProofFile) => void) {
             setSelectedFile(file)
         }
     }
-
-    Alert.alert("どちらを選択しますか？", "", [
-        {
-            text: "キャンセル",
-            onPress: () => {
-            },
-            style: "cancel"
-        },
-        {
-            text: "画像・動画",
-            onPress: () => {
-                ImagePicker.launchImageLibraryAsync({
-                    allowsEditing: true,
-                    allowsMultipleSelection: false,
-                }).then(onSelected)
-            },
-        },
-        {
-            text: "ファイル",
-            onPress: () => {
-                DocumentPicker.getDocumentAsync().then(onSelected)
-            },
-        }
-    ])
 }
 
 
@@ -92,6 +75,7 @@ export const SubmitProofModal = ({visible, setVisible, onSubmit, onDismiss}) => 
     const [submitting, setSubmitting] = useState(false);
     const [fileDescription, setFileDescription] = useState<string>("");
     const [noticeDialogVisible, setNoticeDialogVisible] = useState(false);
+    const [fileTypePickerVisible, setFileTypePickerVisible] = useState(false);
 
     function initialize() {
         setSubmitting(false);
@@ -133,11 +117,11 @@ export const SubmitProofModal = ({visible, setVisible, onSubmit, onDismiss}) => 
                                     imageStyle={{borderRadius: 20, resizeMode: "contain"}}
                                 >
                                     <TouchableOpacity style={{flex: 1, opacity: 0}}
-                                                      onPress={() => launchDocumentPicker(setSelectedFile)}/>
+                                                      onPress={() => setFileTypePickerVisible(true)}/>
                                 </ImageBackground>
                                 :
                                 <FileSelectPlaceholder selectedFile={selectedFile}
-                                                       onPress={() => launchDocumentPicker(setSelectedFile)}/>
+                                                       onPress={() => setFileTypePickerVisible(true)}/>
                         }
                         <TextInput
                             style={{marginTop: 10}}
@@ -155,6 +139,21 @@ export const SubmitProofModal = ({visible, setVisible, onSubmit, onDismiss}) => 
                         >
                             送信
                         </Button>
+                    </Dialog.Actions>
+                </Dialog>
+            </Portal>
+            <Portal>
+                <Dialog visible={fileTypePickerVisible} onDismiss={() => setFileTypePickerVisible(false)}>
+                    <Dialog.Title>どちらを選択しますか？</Dialog.Title>
+                    <Dialog.Actions>
+                        <Button onPress={() => {
+                            setFileTypePickerVisible(false)
+                            launchDocumentPicker(setSelectedFile, "media")
+                        }}>画像・動画</Button>
+                        <Button onPress={() => {
+                            setFileTypePickerVisible(false)
+                            launchDocumentPicker(setSelectedFile, "document")
+                        }}>ファイル</Button>
                     </Dialog.Actions>
                 </Dialog>
             </Portal>
