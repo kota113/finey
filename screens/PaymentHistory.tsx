@@ -198,7 +198,6 @@ const HistoryContainer = ({navigation}) => {
     }
 
     const applyFilter = (chips: ChipStatus[]) => {
-        console.log(chips);
         if (chips.length === 0) {
             setItems(items.map((item) => {
                 animateItems(item.status, true);

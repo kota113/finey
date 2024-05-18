@@ -62,7 +62,6 @@ const getTasks = async () => {
                 task.notificationId && Notifications.cancelScheduledNotificationAsync(task.notificationId)
                 localData.splice(localData.findIndex((localTask) => localTask.id === task.id), 1)
             }
-            console.log(task.dueDate)
         })
         await storeTasks(localData)
         return localData
