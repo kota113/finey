@@ -109,7 +109,7 @@ const FilterChips = ({chipsSelected, onChipPress}: {
 )
 
 const HistoryContainer = ({navigation}) => {
-    const [chipsSelected, setChipsSelected] = useState<ChipStatus[]>(['paid', 'refunded', 'pending']);
+    const [chipsSelected, setChipsSelected] = useState<ChipStatus[]>([]);
     const [loading, setLoading] = useState(true);
     const animationRefs = {
         paid: useRef(new Animated.Value(1)).current,
