@@ -141,8 +141,6 @@ export const SubmitProofModal = ({visible, setVisible, onSubmit, onDismiss}) => 
                         </Button>
                     </Dialog.Actions>
                 </Dialog>
-            </Portal>
-            <Portal>
                 <Dialog visible={fileTypePickerVisible} onDismiss={() => setFileTypePickerVisible(false)}>
                     <Dialog.Title>どちらを選択しますか？</Dialog.Title>
                     <Dialog.Actions>
