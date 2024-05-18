@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {ScrollView, View} from "react-native";
-import {Appbar, Chip, IconButton, List, TextInput, Tooltip, useTheme} from "react-native-paper";
+import {ActivityIndicator, Appbar, Chip, IconButton, List, TextInput, Tooltip, useTheme} from "react-native-paper";
 import {getTasks, storeTasks} from "../utils/localStorage";
 import * as Notifications from "expo-notifications";
 import {SetDepositModal} from "./dialogs/SetDeposit";
@@ -200,6 +200,7 @@ const TaskList = ({tasks, deleteTask, markTaskComplete, markTaskIncomplete}) => 
 const Screen = ({navigation}) => {
     const [task, setTask] = useState<Task>();
     const [tasks, setTasks] = useState<Task[]>([]);
+    const [loadingTasks, setLoadingTasks] = useState<boolean>(true)
     const [timeModalVisible, setTimeModalVisible] = useState<boolean>(false);
     const [dateModalVisible, setDateModalVisible] = useState<boolean>(false);
     const [notificationModalVisible, setNotificationModalVisible] = useState<boolean>(false);
@@ -211,6 +212,7 @@ const Screen = ({navigation}) => {
         async function fetchTask() {
             const data = await getTasks();
             setTasks(data);
+            setLoadingTasks(false);
         }
 
         fetchTask().then()
@@ -404,8 +406,12 @@ const Screen = ({navigation}) => {
                     onChangeText={onTextChange}
                     right={<TextInput.Icon icon={"plus"} onPress={addBtnPressed}/>}
                 />
-                <TaskList tasks={tasks} deleteTask={deleteTask} markTaskComplete={markTaskComplete}
-                          markTaskIncomplete={markTaskIncomplete}/>
+                {loadingTasks ?
+                    <ActivityIndicator size={"large"} style={{marginTop: 20, flex: 1}}/>
+                    :
+                    <TaskList tasks={tasks} deleteTask={deleteTask} markTaskComplete={markTaskComplete}
+                              markTaskIncomplete={markTaskIncomplete}/>
+                }
             </View>
             <DateSetModal visible={dateModalVisible} onConfirm={setDueDate} onAbort={cancelAddTask}/>
             <SetTimeModal date={task?.dueDate} setVisible={setTimeModalVisible} visible={timeModalVisible}
