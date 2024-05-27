@@ -4,6 +4,7 @@ import {ExpandingDot} from 'react-native-animated-pagination-dots';
 import {Button, Dialog, IconButton, Portal, TextInput} from "react-native-paper";
 import {GoogleSignin} from "@react-native-google-signin/google-signin";
 import auth from '@react-native-firebase/auth';
+import {useSafeAreaInsets} from "react-native-safe-area-context";
 
 const {width} = Dimensions.get('screen');
 
@@ -166,7 +167,7 @@ const LoginElements = ({navigation}) => {
 }
 
 
-const ButtonNavigation = ({navigation}) => {
+const Screen = ({navigation}) => {
     const data: PageItem[] = [
         {
             text: "Fineyへようこそ",
@@ -192,6 +193,7 @@ const ButtonNavigation = ({navigation}) => {
             element: (<LoginElements navigation={navigation}/>)
         }])
     ];
+    const insets = useSafeAreaInsets()
 
     const imageW = width * 0.7;
     const imageH = imageW * 1.4;
@@ -277,7 +279,7 @@ const ButtonNavigation = ({navigation}) => {
     }, []);
 
     return (
-        <View style={[styles.container]}>
+        <View style={{...[styles.container], paddingTop: insets.top, paddingBottom: insets.bottom}}>
             <StatusBar hidden/>
             <View style={[StyleSheet.absoluteFillObject]}>
                 {data.map((item, index) => {
@@ -383,4 +385,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default ButtonNavigation;
+export default Screen;
