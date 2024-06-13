@@ -2,7 +2,7 @@ export default {
     expo: {
         name: "Finey",
         slug: "Finey",
-        version: "0.1.0",
+        version: "1.0.1a",
         orientation: "portrait",
         icon: "./assets/icon.png",
         userInterfaceStyle: "light",
