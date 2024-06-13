@@ -22,7 +22,8 @@ export default {
         android: {
             adaptiveIcon: {
                 foregroundImage: "./assets/adaptive-icon.png",
-                backgroundColor: "#ffffff"
+                backgroundColor: "#ffffff",
+                monochromeImage: './assets/monochrome-icon.png'
             },
             package: "com.kota113.Finey",
             // change based on build
