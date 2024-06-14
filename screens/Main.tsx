@@ -207,6 +207,7 @@ const Screen = ({navigation}) => {
     const [depositModalVisible, setDepositModalVisible] = useState<boolean>(false);
     const [submitProofModalVisible, setSubmitProofModalVisible] = useState<boolean>(false);
     const [fileSubmittingTask, setFileSubmittingTask] = useState<Task>();
+    const theme = useTheme();
 
     useEffect(() => {
         async function fetchTask() {
@@ -399,7 +400,7 @@ const Screen = ({navigation}) => {
     return (
         <View style={{flex: 1}}>
             <TopAppBar navigation={navigation}/>
-            <View style={{flex: 1, padding: 20}}>
+            <View style={{flex: 1, padding: 20, backgroundColor: theme.colors.background}}>
                 <TextInput
                     label="タスクを追加"
                     value={task?.name || ""}

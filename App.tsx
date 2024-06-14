@@ -25,7 +25,6 @@ const GlobalTheme: Theme = {
     ...DefaultTheme,
     colors: {
         ...materialTheme.colors,
-        background: materialTheme.colors.surface,
         text: materialTheme.colors.onSurface,
         // random colors, idk what they do
         border: materialTheme.colors.onSurface,
