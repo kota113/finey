@@ -279,7 +279,7 @@ const Screen = ({navigation}) => {
     }, []);
 
     return (
-        <View style={{...[styles.container], paddingTop: insets.top, paddingBottom: insets.bottom}}>
+        <View style={[{...styles.container, paddingTop: insets.top, paddingBottom: insets.bottom}]}>
             <StatusBar hidden/>
             <View style={[StyleSheet.absoluteFillObject]}>
                 {data.map((item, index) => {
