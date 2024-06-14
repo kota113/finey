@@ -2,7 +2,7 @@ export default {
     expo: {
         name: "Finey",
         slug: "Finey",
-        version: "1.0.1a",
+        version: "1.0.0a",
         orientation: "portrait",
         icon: "./assets/icon.png",
         userInterfaceStyle: "light",
@@ -18,6 +18,7 @@ export default {
             supportsTablet: true,
             bundleIdentifier: "com.kota113.Finey",
             googleServicesFile: process.env.GOOGLE_SERVICE_INFO_PLIST || "./creds/GoogleService-Info.plist",
+            buildNumber: "1.0.0a",
         },
         android: {
             adaptiveIcon: {
@@ -30,7 +31,8 @@ export default {
             googleServicesFile: process.env.GOOGLE_SERVICES_JSON || "./creds/GoogleService-Info.plist",
             permissions: [
                 'android.permission.SCHEDULE_EXACT_ALARM'
-            ]
+            ],
+            versionCode: 2
         },
         extra: {
             eas: {
