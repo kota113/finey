@@ -88,8 +88,8 @@ export default function SetupPayment() {
 
     return (
         <StripeProvider
-            publishableKey="pk_test_51PCP5OCaZGND3jHkpOJztWsatV7YnWNRWhghIG4TGdaItAb00Ep6DgJKMzVoeZ0JoaL7Gv2uM1EfiF5EXVTcEv3900I3zosfED"
-            merchantIdentifier="merchant.com.finey" // required for Apple Pay
+            publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE}
+            // merchantIdentifier="merchant.com.finey" // required for Apple Pay
         >
             <Portal>
                 <Dialog visible={visible} dismissableBackButton={false} dismissable={false}>
