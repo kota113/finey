@@ -1,5 +1,5 @@
 import React from 'react';
-import {Alert, Animated, Dimensions, Platform, StatusBar, StyleSheet, Text, View,} from 'react-native';
+import {Alert, Animated, Dimensions, StatusBar, StyleSheet, Text, View,} from 'react-native';
 import {ExpandingDot} from 'react-native-animated-pagination-dots';
 import {Button, Dialog, IconButton, Portal, TextInput} from "react-native-paper";
 import {GoogleSignin} from "@react-native-google-signin/google-signin";
@@ -93,23 +93,23 @@ const LoginElements = ({navigation}) => {
     const showDialog = () => setDialogVisible(true)
     return (
         <>
-            <View style={{marginTop: 40}}>
-                <Button
-                    style={{borderRadius: 7}}
-                    icon={"google"}
-                    mode={"contained-tonal"}
-                    onPress={() => onGoogleButtonPress(navigation).then(() => Alert.alert("ログインしました")).catch((error) => console.log(error))}
-                >
-                    Googleでログイン・登録
-                </Button>
-            </View>
-            <Text style={{
-                color: "#fff",
-                textAlign: "center",
-                marginTop: 12,
-                fontWeight: "600",
-                fontSize: 16
-            }}>または</Text>
+            {/*<View style={{marginTop: 40}}>*/}
+            {/*    <Button*/}
+            {/*        style={{borderRadius: 7}}*/}
+            {/*        icon={"google"}*/}
+            {/*        mode={"contained-tonal"}*/}
+            {/*        onPress={() => onGoogleButtonPress(navigation).then(() => Alert.alert("ログインしました")).catch((error) => console.log(error))}*/}
+            {/*    >*/}
+            {/*        Googleでログイン・登録*/}
+            {/*    </Button>*/}
+            {/*</View>*/}
+            {/*<Text style={{*/}
+            {/*    color: "#fff",*/}
+            {/*    textAlign: "center",*/}
+            {/*    marginTop: 12,*/}
+            {/*    fontWeight: "600",*/}
+            {/*    fontSize: 16*/}
+            {/*}}>または</Text>*/}
             <View style={{marginTop: 10, width: width * 0.7}}>
                 <TextInput
                     style={{marginTop: 10}}
@@ -125,7 +125,7 @@ const LoginElements = ({navigation}) => {
                     label={"パスワード"}
                     disabled={emailLoginLoading}
                     secureTextEntry
-                    autoComplete={Platform.OS === "android" ? "password" : "current-password"}
+                    autoComplete={"password"}
                     textContentType={"password"}
                     value={password}
                     onChangeText={setPassword}
