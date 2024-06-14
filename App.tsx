@@ -14,7 +14,7 @@ import {firebase} from "@react-native-firebase/auth";
 import {GoogleSignin} from "@react-native-google-signin/google-signin";
 import {getFirestore, initializeFirestore} from "@react-native-firebase/firestore/lib/modular";
 import storage from '@react-native-firebase/storage';
-import {materialTheme} from "./materialTheme";
+import materialTheme from "./materialTheme";
 import * as Sentry from "@sentry/react-native";
 import PaymentHistory from "./screens/PaymentHistory";
 
@@ -25,7 +25,6 @@ const GlobalTheme: Theme = {
     ...DefaultTheme,
     colors: {
         ...materialTheme.colors,
-        primary: materialTheme.colors.primary,
         background: materialTheme.colors.surface,
         text: materialTheme.colors.onSurface,
         // random colors, idk what they do
@@ -92,7 +91,7 @@ const StackNavigator = () => {
 
 function App() {
     return (
-        <PaperProvider>
+        <PaperProvider theme={GlobalTheme}>
             <StackNavigator/>
             <StatusBar style="auto"/>
         </PaperProvider>
