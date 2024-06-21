@@ -1,3 +1,5 @@
+import * as path from "node:path";
+
 export default {
     expo: {
         name: "Finey",
@@ -17,7 +19,7 @@ export default {
         ios: {
             supportsTablet: true,
             bundleIdentifier: "com.kota113.Finey",
-            googleServicesFile: process.env.GOOGLE_SERVICE_INFO_PLIST || "./creds/GoogleService-Info.plist",
+            googleServicesFile: process.env.GOOGLE_SERVICE_INFO_PLIST || path.resolve("./creds/GoogleService-Info.plist"),
             buildNumber: "1.0.0a",
         },
         android: {
@@ -28,7 +30,7 @@ export default {
             },
             package: "com.kota113.Finey",
             // change based on build
-            googleServicesFile: process.env.GOOGLE_SERVICES_JSON || "./creds/GoogleService-Info.plist",
+            googleServicesFile: process.env.GOOGLE_SERVICES_JSON || path.resolve("./creds/google-services.json"),
             permissions: [
                 'android.permission.SCHEDULE_EXACT_ALARM'
             ],
