@@ -1,16 +1,5 @@
-import * as path from "node:path";
-
-let googleServicesJson: string;
-let googleServiceInfoPlist: string;
-
-// if the development os is windows, change the path to the Google services file
-if (process.platform === "win32") {
-    googleServicesJson = path.win32.resolve(__dirname, "creds/google-services.json")
-    googleServiceInfoPlist = path.win32.resolve(__dirname, "creds/GoogleService-Info.plist")
-} else {
-    googleServicesJson = '/mnt/c/Users/iwa12/WebstormProjects/Finey/creds/google-services.json'
-    googleServiceInfoPlist = '/mnt/c/Users/iwa12/WebstormProjects/Finey/creds/GoogleService-Info.plist'
-}
+const googleServicesJson: string = '/mnt/c/Users/iwa12/WebstormProjects/Finey/creds/google-services.json'
+const googleServiceInfoPlist: string = '/mnt/c/Users/iwa12/WebstormProjects/Finey/creds/GoogleService-Info.plist'
 
 export default {
     expo: {
