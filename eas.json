@@ -8,7 +8,8 @@
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://finey-api.kota113.com",
-        "EXPO_PUBLIC_SENTRY_DSN": "https://5fe728516b166fb3f246a9b81085374b@o4507253678866432.ingest.us.sentry.io/4507253681750016"
+        "EXPO_PUBLIC_SENTRY_DSN": "https://5fe728516b166fb3f246a9b81085374b@o4507253678866432.ingest.us.sentry.io/4507253681750016",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE": "pk_live_51PCP5OCaZGND3jHkJVGSNK8kHTbk5QvMMdLQSmgcDBLDvfRV30oNZPFRtsaLgACRUWq182vWGqUk3TlC4YkEFtjD00wHaLUMGc"
       }
     },
     "preview": {
@@ -19,7 +20,7 @@
       "env": {
         "EXPO_PUBLIC_API_URL": "https://finey-api.kota113.com",
         "EXPO_PUBLIC_SENTRY_DSN": "https://5fe728516b166fb3f246a9b81085374b@o4507253678866432.ingest.us.sentry.io/4507253681750016",
-        "EXPO_PUBLIC_STRIPE_PUBLISHABLE": "pk_test_51PCP5OCaZGND3jHkpOJztWsatV7YnWNRWhghIG4TGdaItAb00Ep6DgJKMzVoeZ0JoaL7Gv2uM1EfiF5EXVTcEv3900I3zosfED"
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE": "pk_live_51PCP5OCaZGND3jHkJVGSNK8kHTbk5QvMMdLQSmgcDBLDvfRV30oNZPFRtsaLgACRUWq182vWGqUk3TlC4YkEFtjD00wHaLUMGc"
       }
     },
     "production": {
