@@ -1,5 +1,17 @@
 import * as path from "node:path";
 
+let googleServicesJson: string;
+let googleServiceInfoPlist: string;
+
+// if the development os is windows, change the path to the Google services file
+if (process.platform === "win32") {
+    googleServicesJson = path.win32.resolve(__dirname, "creds/google-services.json")
+    googleServiceInfoPlist = path.win32.resolve(__dirname, "creds/GoogleService-Info.plist")
+} else {
+    googleServicesJson = '/mnt/c/Users/iwa12/WebstormProjects/Finey/creds/google-services.json'
+    googleServiceInfoPlist = '/mnt/c/Users/iwa12/WebstormProjects/Finey/creds/GoogleService-Info.plist'
+}
+
 export default {
     expo: {
         name: "Finey",
@@ -19,7 +31,7 @@ export default {
         ios: {
             supportsTablet: true,
             bundleIdentifier: "com.kota113.Finey",
-            googleServicesFile: process.env.GOOGLE_SERVICE_INFO_PLIST || path.resolve("./creds/GoogleService-Info.plist"),
+            googleServicesFile: process.env.GOOGLE_SERVICE_INFO_PLIST || googleServiceInfoPlist,
             buildNumber: "1.0.0a",
         },
         android: {
@@ -30,7 +42,7 @@ export default {
             },
             package: "com.kota113.Finey",
             // change based on build
-            googleServicesFile: process.env.GOOGLE_SERVICES_JSON || path.resolve("./creds/google-services.json"),
+            googleServicesFile: process.env.GOOGLE_SERVICES_JSON || googleServicesJson,
             permissions: [
                 'android.permission.SCHEDULE_EXACT_ALARM'
             ],
