@@ -2,7 +2,7 @@ import {TimePickerModal} from "react-native-paper-dates";
 import React from "react";
 import {Button, Dialog, Portal, Text} from "react-native-paper";
 
-export const SetTimeModal = ({visible, setVisible, onConfirm, onAbort, date}) => {
+export const SetTimeModal = ({visible, setVisible, onConfirm, date}) => {
     const [invalid, setInvalid] = React.useState(false)
 
     function onConfirmWrapper({hours, minutes}) {
@@ -27,7 +27,7 @@ export const SetTimeModal = ({visible, setVisible, onConfirm, onAbort, date}) =>
                 <TimePickerModal
                     locale='ja'
                     visible={visible}
-                    onDismiss={onAbort}
+                    onDismiss={() => setVisible(false)}
                     onConfirm={onConfirmWrapper}
                     hours={0}
                     minutes={0}
