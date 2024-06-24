@@ -1,19 +1,16 @@
 import React, {useEffect, useState} from "react";
-import {ScrollView, View} from "react-native";
-import {ActivityIndicator, Appbar, Chip, IconButton, List, TextInput, Tooltip, useTheme} from "react-native-paper";
+import {ScrollView, StyleSheet, View} from "react-native";
+import {ActivityIndicator, Appbar, Chip, FAB, IconButton, List, Text, Tooltip, useTheme} from "react-native-paper";
 import {getTasks, storeTasks} from "../utils/localStorage";
 import * as Notifications from "expo-notifications";
-import {SetDepositModal} from "./dialogs/SetDeposit";
-import {SetNotificationModal} from "./dialogs/SetNotification";
-import {DateSetModal} from "./dialogs/SetDate";
-import {SetTimeModal} from "./dialogs/SetTime";
 import {SubmitProofModal} from "./dialogs/SubmitProof";
+import {PaymentFailedDialog} from "./dialogs/PaymentFailed";
 import {GrantNotificationDialog} from "./dialogs/GrantNotification";
 import auth, {firebase} from "@react-native-firebase/auth";
 import '@react-native-firebase/storage';
 import {ProofFile, Task} from "../types";
 import SetupPayment from "./dialogs/SetupPayment";
-import uuid from 'react-native-uuid';
+import AddTaskModal from "./dialogs/AddTaskModal";
 
 
 const TopAppBar = ({navigation}) => (
@@ -144,26 +141,37 @@ const TaskList = ({tasks, deleteTask, markTaskComplete, markTaskIncomplete}) => 
 
     return (
         <ScrollView style={{flex: 1, paddingTop: 5}}>
-            {sections.map((section, index) => (
-                <List.Section
-                    key={index}
-                >
-                    <List.Subheader>{section.title}</List.Subheader>
-                    {/*  don't use FlatList  */}
-                    {section.data.map((task: Task, index: number) => {
-                        return (
-                            <TaskListItem
-                                key={index}
-                                index={index}
-                                task={task}
-                                deleteTask={deleteTask}
-                                markTaskComplete={markTaskComplete}
-                                markTaskIncomplete={markTaskIncomplete}
-                            />
-                        )
-                    })}
-                </List.Section>
-            ))}
+            {tasks.length > 0 ?
+                sections.map((section, index) => (
+                    <List.Section
+                        key={index}
+                    >
+                        <List.Subheader>{section.title}</List.Subheader>
+                        {/*  don't use FlatList  */}
+                        {section.data.map((task: Task, index: number) => {
+                            return (
+                                <TaskListItem
+                                    key={index}
+                                    index={index}
+                                    task={task}
+                                    deleteTask={deleteTask}
+                                    markTaskComplete={markTaskComplete}
+                                    markTaskIncomplete={markTaskIncomplete}
+                                />
+                            )
+                        })}
+                    </List.Section>
+                ))
+                :
+                <View style={{alignSelf: 'center', flex: 1}}>
+                    <Text style={{textAlign: "center", fontSize: 20}}>タスクがありません</Text>
+                    <View style={{flexDirection: "row", alignItems: "center"}}>
+                        <IconButton icon={'plus'} mode={'contained-tonal'}
+                                    style={{borderRadius: 13, backgroundColor: theme.colors.primaryContainer}}/>
+                        <Text style={{textAlign: "center", fontSize: 20}}>ボタンから追加できます</Text>
+                    </View>
+                </View>
+            }
             {completedTasks.length > 0 &&
                 <List.Accordion title={"完了済み"}>
                     {completedTasks.map((task: Task, index: number) => (
@@ -197,16 +205,23 @@ const TaskList = ({tasks, deleteTask, markTaskComplete, markTaskIncomplete}) => 
 };
 
 
+const AddTaskFAB = ({onPress}) => (
+    <FAB
+        variant={"primary"}
+        icon="plus"
+        style={styles.fab}
+        onPress={onPress}
+    />
+)
+
+
 const Screen = ({navigation}) => {
-    const [task, setTask] = useState<Task>();
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loadingTasks, setLoadingTasks] = useState<boolean>(true)
-    const [timeModalVisible, setTimeModalVisible] = useState<boolean>(false);
-    const [dateModalVisible, setDateModalVisible] = useState<boolean>(false);
-    const [notificationModalVisible, setNotificationModalVisible] = useState<boolean>(false);
-    const [depositModalVisible, setDepositModalVisible] = useState<boolean>(false);
     const [submitProofModalVisible, setSubmitProofModalVisible] = useState<boolean>(false);
+    const [paymentFailedModalVisible, setPaymentFailedModalVisible] = useState<boolean>(false);
     const [fileSubmittingTask, setFileSubmittingTask] = useState<Task>();
+    const [addTaskModalVisible, setAddTaskModalVisible] = useState<boolean>(false);
     const theme = useTheme();
 
     useEffect(() => {
@@ -218,67 +233,6 @@ const Screen = ({navigation}) => {
 
         fetchTask().then()
     }, []);
-
-    function onTextChange(text: string) {
-        setTask({
-            id: uuid.v4() as string,
-            name: text,
-            isCompleted: false,
-            deposit: 0,
-            dueDate: new Date(),
-            notificationId: "",
-            notifyBefore: 0
-        });
-    }
-
-    function setDueTime(params: { hours: number, minutes: number }) {
-        setTask((currentTask) => {
-            const updatedTask = {...currentTask};
-            const date = new Date(currentTask.dueDate);
-            date.setHours(params.hours);
-            date.setMinutes(params.minutes);
-            updatedTask.dueDate = date;
-            return updatedTask;
-        });
-        setTimeModalVisible(false);
-        setDepositModalVisible(true);
-    }
-
-    function setDueDate({date}: { date: Date }) {
-        setTask((currentTask) => {
-            const updatedTask = {...currentTask};
-            updatedTask.dueDate = date;
-            return updatedTask;
-        });
-        setDateModalVisible(false);
-        setTimeModalVisible(true);
-    }
-
-    function setDeposit(deposit: number) {
-        setTask((currentTask) => {
-            const updatedTask = {...currentTask};
-            updatedTask.deposit = deposit;
-            return updatedTask;
-        });
-        setDepositModalVisible(false);
-        setNotificationModalVisible(true);
-    }
-
-    function setNotificationBefore(notifyBefore: number) {
-        setTask((currentTask) => {
-            const updatedTask = {...currentTask};
-            updatedTask.notifyBefore = notifyBefore;
-            addTask(updatedTask);
-            setNotificationModalVisible(false);
-            return null;
-        });
-    }
-
-    const addBtnPressed = () => {
-        if (task?.name) {
-            setDateModalVisible(true);
-        }
-    };
 
     const markTaskComplete = (task: Task) => {
         setFileSubmittingTask(task)
@@ -349,47 +303,6 @@ const Screen = ({navigation}) => {
         return true;
     }
 
-    function cancelAddTask() {
-        setTask(undefined);
-        setDateModalVisible(false);
-        setTimeModalVisible(false);
-        setDepositModalVisible(false);
-        setNotificationModalVisible(false);
-    }
-
-    const addTask = (task: Task) => {
-        setTasks((prevTasks) => {
-            storeTasks([...prevTasks, task]).then(() => {
-                auth().currentUser.getIdToken().then((token) => {
-                    fetch(`${process.env.EXPO_PUBLIC_API_URL}/add-task`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            'Authorization': 'Bearer ' + token
-                        },
-                        body: JSON.stringify({id: task.id})
-                    }).then((res) => {
-                        if (!res.ok) {
-                            console.error("Failed to execute payment")
-                        } else console.log("payment completed")
-                    });
-                })
-                // notify certain time before due date
-                const notificationDate = new Date(task.dueDate.getTime() - task.notifyBefore);
-                Notifications.scheduleNotificationAsync({
-                    content: {
-                        title: "期限が近づいています",
-                        body: task.name,
-                    },
-                    trigger: notificationDate,
-                }).then((id) => {
-                    task.notificationId = id;
-                })
-            });
-            return [...prevTasks, task]
-        });
-    }
-
     const deleteTask = (task: Task) => {
         const newTasks = tasks.filter(t => t.id !== task.id)
         if (!task.isCompleted) Notifications.cancelScheduledNotificationAsync(task.notificationId).then(() => console.log("cancelled"));
@@ -401,12 +314,6 @@ const Screen = ({navigation}) => {
         <View style={{flex: 1}}>
             <TopAppBar navigation={navigation}/>
             <View style={{flex: 1, padding: 20, backgroundColor: theme.colors.background}}>
-                <TextInput
-                    label="タスクを追加"
-                    value={task?.name || ""}
-                    onChangeText={onTextChange}
-                    right={<TextInput.Icon icon={"plus"} onPress={addBtnPressed}/>}
-                />
                 {loadingTasks ?
                     <ActivityIndicator size={"large"} style={{marginTop: 20, flex: 1}}/>
                     :
@@ -414,21 +321,26 @@ const Screen = ({navigation}) => {
                               markTaskIncomplete={markTaskIncomplete}/>
                 }
             </View>
-            <DateSetModal visible={dateModalVisible} onConfirm={setDueDate} onAbort={cancelAddTask}/>
-            <SetTimeModal date={task?.dueDate} setVisible={setTimeModalVisible} visible={timeModalVisible}
-                          onConfirm={setDueTime} onAbort={cancelAddTask}/>
-            {depositModalVisible &&
-                <SetDepositModal visible={depositModalVisible} onConfirm={setDeposit} onAbort={cancelAddTask}/>}
-            {notificationModalVisible &&
-                <SetNotificationModal visible={notificationModalVisible} onConfirm={setNotificationBefore}
-                                      onAbort={cancelAddTask}/>}
             <SubmitProofModal visible={submitProofModalVisible} setVisible={setSubmitProofModalVisible}
                               onSubmit={onFileSubmit} onDismiss={cancelFileSubmit}/>
             <GrantNotificationDialog/>
+            <PaymentFailedDialog visible={paymentFailedModalVisible} setVisible={setPaymentFailedModalVisible}/>
             <SetupPayment/>
+            <AddTaskFAB onPress={() => setAddTaskModalVisible(true)}/>
+            <AddTaskModal isVisible={addTaskModalVisible} setIsVisible={setAddTaskModalVisible} setTasks={setTasks}
+                          setPaymentFailedModalVisible={setPaymentFailedModalVisible}/>
         </View>
     );
 };
+
+const styles = StyleSheet.create({
+    fab: {
+        position: 'absolute',
+        margin: 25,
+        right: 0,
+        bottom: 0,
+    },
+})
 
 export default ({navigation}) => {
     if (auth().currentUser === null) {
