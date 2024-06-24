@@ -64,7 +64,6 @@ async function onEmailButtonPress(email: string, password: string, navigation: a
                     // login if email already exists
                     auth().signInWithEmailAndPassword(email, password)
                         .then(() => {
-                            Alert.alert("ログインしました")
                             navigation.reset({
                                 index: 0,
                                 routes: [{name: 'AppDrawer'}]
