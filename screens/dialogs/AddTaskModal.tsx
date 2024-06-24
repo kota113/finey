@@ -67,7 +67,7 @@ const SlidableModal = ({isVisible, setIsVisible, setTasks, setPaymentFailedModal
         id: uuid.v4() as string,
         name: "",
         isCompleted: false,
-        deposit: 0,
+        deposit: 1000,
         dueDate: new Date(`${_tomorrow.getFullYear()}-${_tomorrow.getMonth() + 1}-${_tomorrow.getDate()}T23:59:59`),
         notificationId: "",
         notifyBefore: 30 * 60 * 1000
@@ -137,9 +137,11 @@ const SlidableModal = ({isVisible, setIsVisible, setTasks, setPaymentFailedModal
                     </View>
                 }
             </Animated.View>
-            <SetDepositModal visible={depositModalVisible} onConfirm={setDeposit}
-                             onAbort={() => setDepositModalVisible(false)}/>
-            <LoadingDialog visible={addingTask}/>
+            {isVisible && <>
+                <SetDepositModal currentValue={task.deposit} visible={depositModalVisible} onConfirm={setDeposit}
+                                 onAbort={() => setDepositModalVisible(false)}/>
+                <LoadingDialog visible={addingTask}/>
+            </>}
         </>
         //     </View>
     );

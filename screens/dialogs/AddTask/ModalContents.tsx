@@ -153,12 +153,13 @@ export default ({translateY, heightOptions, task, setTask}) => {
         <View style={{flex: 1, flexDirection: "column", justifyContent: "flex-start", alignItems: "flex-start"}}>
             {TitleInput}
             <ShortInfoInput/>
-            <DateSetModal visible={dateModalVisible} onConfirm={setDueDate} onAbort={() => setDateModalVisible(false)}/>
+            <DateSetModal currentValue={task?.dueDate} visible={dateModalVisible} onConfirm={setDueDate}
+                          onAbort={() => setDateModalVisible(false)}/>
             <SetTimeModal date={task?.dueDate} setVisible={setTimeModalVisible} visible={timeModalVisible}
                           onConfirm={setDueTime}/>
-            {notificationModalVisible &&
-                <SetNotificationModal visible={notificationModalVisible} onConfirm={setNotifyBefore}
-                                      onAbort={() => setNotificationModalVisible(false)}/>}
+            <SetNotificationModal currentValue={task?.notifyBefore} visible={notificationModalVisible}
+                                  onConfirm={setNotifyBefore}
+                                  onAbort={() => setNotificationModalVisible(false)}/>
         </View>
     )
 }

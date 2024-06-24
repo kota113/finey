@@ -1,7 +1,7 @@
 import {DatePickerModal} from "react-native-paper-dates";
 import React from "react";
 
-export const DateSetModal = ({visible, onConfirm, onAbort}) => {
+export const DateSetModal = ({currentValue, visible, onConfirm, onAbort}) => {
     return (
         <DatePickerModal
             validRange={{
@@ -16,7 +16,7 @@ export const DateSetModal = ({visible, onConfirm, onAbort}) => {
             animationType="fade"
             label={"日付を選択"}
             saveLabel={"OK"}
-            date={new Date()}
+            date={currentValue}
         />
     );
 };

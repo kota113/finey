@@ -1,10 +1,10 @@
 import React, {useState} from "react";
 import {Button, Dialog, Portal, SegmentedButtons, TextInput} from "react-native-paper";
 
-export const SetNotificationModal = ({visible, onConfirm, onAbort}) => {
-    const [days, setDays] = useState<number>();
-    const [hours, setHours] = useState<number>();
-    const [minutes, setMinutes] = useState<number>(30);
+export const SetNotificationModal = ({currentValue, visible, onConfirm, onAbort}) => {
+    const [days, setDays] = useState<number>(Math.floor(currentValue / (24 * 60 * 60 * 1000)));
+    const [hours, setHours] = useState<number>(Math.floor((currentValue % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)));
+    const [minutes, setMinutes] = useState<number>(Math.floor(((currentValue % (24 * 60 * 60 * 1000)) % (60 * 60 * 1000)) / (60 * 1000)));
     const [selectedIndex, setSelectedIndex] = useState<number>(2);
     const buttons = [
         {
