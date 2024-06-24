@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import {Button, Dialog, HelperText, Portal, TextInput} from "react-native-paper";
 
-export const SetDepositModal = ({currentValue, visible, onConfirm, onAbort}) => {
+export default ({currentValue, visible, onConfirm, onAbort}) => {
     const [deposit, setDeposit] = useState<number>(currentValue);
     const hasError = () => {
         return deposit && deposit < 1000;

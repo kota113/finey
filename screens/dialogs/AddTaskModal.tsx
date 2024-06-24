@@ -10,7 +10,7 @@ import ModalContents from "./AddTask/ModalContents";
 import auth from "@react-native-firebase/auth";
 import {storeTasks} from "../../utils/localStorage";
 import * as Notifications from "expo-notifications";
-import {SetDepositModal} from "./SetDeposit";
+import SetDepositModal from "./SetDeposit";
 import LoadingDialog from "./Loading";
 
 
