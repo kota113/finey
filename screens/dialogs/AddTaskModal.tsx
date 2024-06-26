@@ -73,7 +73,7 @@ const SlidableModal = ({isVisible, setIsVisible, setTasks, setPaymentFailedModal
         notifyBefore: 30 * 60 * 1000
     }
     const [task, setTask] = useState<Task>(defaultTask)
-    const [addingTask, setAddingTask] = useState<boolean>(false)
+    const [addingTaskModalVisible, setAddingTaskModalVisible] = useState<boolean>(false)
     const [depositModalVisible, setDepositModalVisible] = useState<boolean>(false);
     const safeAreaInsets = useSafeAreaInsets();
     const height = Dimensions.get('window')["height"] - safeAreaInsets.top;
@@ -92,9 +92,10 @@ const SlidableModal = ({isVisible, setIsVisible, setTasks, setPaymentFailedModal
     function setDeposit(deposit: number) {
         const updatedTask = {...task};
         updatedTask.deposit = deposit;
-        setAddingTask(true)
+        setDepositModalVisible(false);
+        setAddingTaskModalVisible(true);
         const succeeded = addTask(updatedTask, setTasks, setPaymentFailedModalVisible);
-        setAddingTask(false)
+        setAddingTaskModalVisible(false);
         if (succeeded) {
             setTask(defaultTask);
             setIsVisible(false);
@@ -104,7 +105,6 @@ const SlidableModal = ({isVisible, setIsVisible, setTasks, setPaymentFailedModal
         //     updatedTask.deposit = deposit;
         //     return updatedTask;
         // });
-        setDepositModalVisible(false);
     }
 
     const animatedStyle = useAnimatedStyle(() => {
@@ -139,9 +139,10 @@ const SlidableModal = ({isVisible, setIsVisible, setTasks, setPaymentFailedModal
             </Animated.View>
             {isVisible && <>
                 <SetDepositModal currentValue={task.deposit} visible={depositModalVisible} onConfirm={setDeposit}
-                                 onAbort={() => setDepositModalVisible(false)}/>
-                <LoadingDialog visible={addingTask}/>
+                                 onAbort={() => setDepositModalVisible(false)}
+                />
             </>}
+            <LoadingDialog visible={addingTaskModalVisible}/>
         </>
         //     </View>
     );
