@@ -4,7 +4,7 @@ import {ActivityIndicator, Appbar, Chip, FAB, IconButton, List, Text, Tooltip, u
 import {getTasks, storeTasks} from "../utils/localStorage";
 import * as Notifications from "expo-notifications";
 import {SubmitProofModal} from "./dialogs/SubmitProof";
-import {PaymentFailedDialog} from "./dialogs/PaymentFailed";
+import PaymentFailedDialog from "./dialogs/PaymentFailed";
 import {GrantNotificationDialog} from "./dialogs/GrantNotification";
 import auth, {firebase} from "@react-native-firebase/auth";
 import '@react-native-firebase/storage';
@@ -324,7 +324,8 @@ const Screen = ({navigation}) => {
             <SubmitProofModal visible={submitProofModalVisible} setVisible={setSubmitProofModalVisible}
                               onSubmit={onFileSubmit} onDismiss={cancelFileSubmit}/>
             <GrantNotificationDialog/>
-            <PaymentFailedDialog visible={paymentFailedModalVisible} setVisible={setPaymentFailedModalVisible}/>
+            <PaymentFailedDialog visible={paymentFailedModalVisible} setVisible={setPaymentFailedModalVisible}
+                                 navigation={navigation}/>
             <SetupPayment/>
             <AddTaskFAB onPress={() => setAddTaskModalVisible(true)}/>
             <AddTaskModal isVisible={addTaskModalVisible} setIsVisible={setAddTaskModalVisible} setTasks={setTasks}
