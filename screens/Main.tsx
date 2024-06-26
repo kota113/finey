@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {ScrollView, StyleSheet, View} from "react-native";
+import {Alert, ScrollView, StyleSheet, View} from "react-native";
 import {ActivityIndicator, Appbar, Chip, FAB, IconButton, List, Text, Tooltip, useTheme} from "react-native-paper";
 import {getTasks, storeTasks} from "../utils/localStorage";
 import * as Notifications from "expo-notifications";
@@ -11,6 +11,8 @@ import '@react-native-firebase/storage';
 import {ProofFile, Task} from "../types";
 import SetupPayment from "./dialogs/SetupPayment";
 import AddTaskModal from "./dialogs/AddTaskModal";
+import ConfirmTaskDeletion from "./dialogs/ConfirmTaskDeletion";
+import {markTaskCompleteRequest, refundTaskRequest} from "../utils/apiRequest";
 
 
 const TopAppBar = ({navigation}) => (
@@ -222,6 +224,7 @@ const Screen = ({navigation}) => {
     const [paymentFailedModalVisible, setPaymentFailedModalVisible] = useState<boolean>(false);
     const [fileSubmittingTask, setFileSubmittingTask] = useState<Task>();
     const [addTaskModalVisible, setAddTaskModalVisible] = useState<boolean>(false);
+    const [taskToDelete, setTaskToDelete] = useState<Task>();
     const theme = useTheme();
 
     useEffect(() => {
@@ -256,15 +259,8 @@ const Screen = ({navigation}) => {
                 }
             }
         ).then(async () => {
-            const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/mark-task-as-completed`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    'Authorization': 'Bearer ' + await auth().currentUser.getIdToken()
-                },
-                body: JSON.stringify({id: fileSubmittingTask.id})
-            })
-            if (!res.ok) {
+            const requestSucceeded = await markTaskCompleteRequest(fileSubmittingTask);
+            if (!requestSucceeded) {
                 console.error("Failed to mark task as complete")
             }
             const newTasks = tasks.map(t => {
@@ -304,10 +300,16 @@ const Screen = ({navigation}) => {
     }
 
     const deleteTask = (task: Task) => {
-        const newTasks = tasks.filter(t => t.id !== task.id)
-        if (!task.isCompleted) Notifications.cancelScheduledNotificationAsync(task.notificationId).then(() => console.log("cancelled"));
-        setTasks(newTasks);
-        storeTasks(newTasks).then(() => console.log("stored"));
+        refundTaskRequest(task).then((responseSuccess) => {
+            if (responseSuccess) {
+                const newTasks = tasks.filter(t => t.id !== task.id)
+                if (!task.isCompleted) Notifications.cancelScheduledNotificationAsync(task.notificationId).then(() => console.log("cancelled"));
+                setTasks(newTasks);
+                storeTasks(newTasks).then(() => console.log("stored"));
+            } else {
+                Alert.alert("削除に失敗しました", "通信状況を確認してください。", [{text: "OK"}])
+            }
+        });
     };
 
     return (
@@ -317,7 +319,7 @@ const Screen = ({navigation}) => {
                 {loadingTasks ?
                     <ActivityIndicator size={"large"} style={{marginTop: 20, flex: 1}}/>
                     :
-                    <TaskList tasks={tasks} deleteTask={deleteTask} markTaskComplete={markTaskComplete}
+                    <TaskList tasks={tasks} deleteTask={setTaskToDelete} markTaskComplete={markTaskComplete}
                               markTaskIncomplete={markTaskIncomplete}/>
                 }
             </View>
@@ -330,6 +332,8 @@ const Screen = ({navigation}) => {
             <AddTaskFAB onPress={() => setAddTaskModalVisible(true)}/>
             <AddTaskModal isVisible={addTaskModalVisible} setIsVisible={setAddTaskModalVisible} setTasks={setTasks}
                           setPaymentFailedModalVisible={setPaymentFailedModalVisible}/>
+            <ConfirmTaskDeletion visible={taskToDelete != undefined} onConfirm={() => deleteTask(taskToDelete)}
+                                 onAbort={() => setTaskToDelete(undefined)}/>
         </View>
     );
 };
