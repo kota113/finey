@@ -71,6 +71,15 @@ export default ({translateY, heightOptions, task, setTask}) => {
         });
     }
 
+    const currentDate = new Date();
+    const tomorrowDate = new Date(currentDate);
+    tomorrowDate.setDate(currentDate.getDate() + 1);
+    const dateString =
+        task?.dueDate.toLocaleDateString() === currentDate.toLocaleDateString() ? "今日" :
+            task?.dueDate.toLocaleDateString() === tomorrowDate.toLocaleDateString() ? "明日" :
+                task?.dueDate.toLocaleDateString()
+
+
     const TitleInput = useMemo(() => (
         <TextInput
             ref={taskTitleInput}
@@ -111,7 +120,7 @@ export default ({translateY, heightOptions, task, setTask}) => {
                     setDateModalVisible(true)
                 }}
             >
-                {task?.dueDate.toLocaleDateString()}
+                {dateString}
             </Button>
             <Icon source={"clock-outline"} size={30}/>
             <Button
