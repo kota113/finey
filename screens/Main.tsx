@@ -306,6 +306,7 @@ const Screen = ({navigation}) => {
                 if (!task.isCompleted) Notifications.cancelScheduledNotificationAsync(task.notificationId).then(() => console.log("cancelled"));
                 setTasks(newTasks);
                 storeTasks(newTasks).then(() => console.log("stored"));
+                setTaskToDelete(undefined);
             } else {
                 Alert.alert("削除に失敗しました", "通信状況を確認してください。", [{text: "OK"}])
             }
