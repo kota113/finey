@@ -33,6 +33,7 @@ async function addTask(
 
     let succeeded: boolean;
     const prevTasks = await getTasks();
+    await storeTasks([...prevTasks, task]);
 
     try {
         const responseSuccess = await requestAPI();
@@ -48,9 +49,9 @@ async function addTask(
                 trigger: notificationDate,
             });
             setTasks((prevTasks) => [...prevTasks, task]);
-            await storeTasks([...prevTasks, task]);
         } else {
             succeeded = false;
+            await storeTasks(prevTasks);
             setPaymentFailedModalVisible(true);
         }
     } catch (error) {
