@@ -8,55 +8,56 @@ import uuid from "react-native-uuid";
 import ModalHeader from "./AddTask/ModalHeader";
 import ModalContents from "./AddTask/ModalContents";
 import auth from "@react-native-firebase/auth";
-import {storeTasks} from "../../utils/localStorage";
+import {getTasks, storeTasks} from "../../utils/localStorage";
 import * as Notifications from "expo-notifications";
 import SetDepositModal from "./SetDeposit";
-import LoadingDialog from "./Loading";
 
 
-const addTask = (task: Task, setTasks: React.Dispatch<React.SetStateAction<Task[]>>, setPaymentFailedModalVisible: React.Dispatch<React.SetStateAction<boolean>>) => {
+async function addTask(
+    task: Task,
+    setTasks: React.Dispatch<React.SetStateAction<Task[]>>,
+    setPaymentFailedModalVisible: React.Dispatch<React.SetStateAction<boolean>>
+): Promise<boolean> {
     async function requestAPI() {
         const token = await auth().currentUser.getIdToken();
         const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/add-task`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                'Authorization': 'Bearer ' + token
+                Authorization: "Bearer " + token,
             },
-            body: JSON.stringify({id: task.id})
-        })
+            body: JSON.stringify({id: task.id}),
+        });
         return res.ok;
     }
 
-    let succeeded = false;
-    setTasks((prevTasks) => {
-        let newTasks = [...prevTasks];
-        storeTasks([...prevTasks, task]).then(() => {
-            requestAPI().then((responseSuccess) => {
-                if (responseSuccess) {
-                    succeeded = true;
-                    newTasks = [...prevTasks, task];
-                    // notify certain time before due date
-                    const notificationDate = new Date(task.dueDate.getTime() - task.notifyBefore);
-                    Notifications.scheduleNotificationAsync({
-                        content: {
-                            title: "期限が近づいています",
-                            body: task.name,
-                        },
-                        trigger: notificationDate,
-                    }).then((id) => {
-                        task.notificationId = id;
-                    })
-                } else {
-                    succeeded = false;
-                    setPaymentFailedModalVisible(true)
-                    // undo adding the task
-                    storeTasks(prevTasks).then(() => console.log("undone adding task"));
-                }
+    let succeeded: boolean;
+    const prevTasks = await getTasks();
+
+    try {
+        const responseSuccess = await requestAPI();
+        if (responseSuccess) {
+            succeeded = true;
+            // notify certain time before due date
+            const notificationDate = new Date(task.dueDate.getTime() - task.notifyBefore);
+            task.notificationId = await Notifications.scheduleNotificationAsync({
+                content: {
+                    title: "期限が近づいています",
+                    body: task.name,
+                },
+                trigger: notificationDate,
             });
-        })
-        return newTasks;
-    });
+            setTasks((prevTasks) => [...prevTasks, task]);
+            await storeTasks([...prevTasks, task]);
+        } else {
+            succeeded = false;
+            setPaymentFailedModalVisible(true);
+        }
+    } catch (error) {
+        console.error("Error adding task:", error);
+        succeeded = false;
+    }
+
     return succeeded;
 }
 
@@ -73,7 +74,7 @@ const SlidableModal = ({isVisible, setIsVisible, setTasks, setPaymentFailedModal
         notifyBefore: 30 * 60 * 1000
     }
     const [task, setTask] = useState<Task>(defaultTask)
-    const [addingTaskModalVisible, setAddingTaskModalVisible] = useState<boolean>(false)
+    const [loading, setLoading] = useState<boolean>(false);
     const [depositModalVisible, setDepositModalVisible] = useState<boolean>(false);
     const safeAreaInsets = useSafeAreaInsets();
     const height = Dimensions.get('window')["height"] - safeAreaInsets.top;
@@ -92,14 +93,15 @@ const SlidableModal = ({isVisible, setIsVisible, setTasks, setPaymentFailedModal
     function setDeposit(deposit: number) {
         const updatedTask = {...task};
         updatedTask.deposit = deposit;
-        setDepositModalVisible(false);
-        setAddingTaskModalVisible(true);
-        const succeeded = addTask(updatedTask, setTasks, setPaymentFailedModalVisible);
-        setAddingTaskModalVisible(false);
-        if (succeeded) {
-            setTask(defaultTask);
-            setIsVisible(false);
-        }
+        setLoading(true);
+        addTask(updatedTask, setTasks, setPaymentFailedModalVisible).then((succeeded) => {
+            setDepositModalVisible(false);
+            setLoading(false);
+            if (succeeded) {
+                setTask(defaultTask);
+                setIsVisible(false);
+            }
+        });
         // setTask((currentTask) => {
         //     const updatedTask = {...currentTask};
         //     updatedTask.deposit = deposit;
@@ -122,7 +124,6 @@ const SlidableModal = ({isVisible, setIsVisible, setTasks, setPaymentFailedModal
     }, [isVisible]);
 
     return (
-        // <View style={{flex: 1}}>
         <>
             <Animated.View style={[{...styles.modal, backgroundColor: theme.colors.secondaryContainer}, animatedStyle]}>
                 {isVisible &&
@@ -139,12 +140,10 @@ const SlidableModal = ({isVisible, setIsVisible, setTasks, setPaymentFailedModal
             </Animated.View>
             {isVisible && <>
                 <SetDepositModal currentValue={task.deposit} visible={depositModalVisible} onConfirm={setDeposit}
-                                 onAbort={() => setDepositModalVisible(false)}
+                                 onAbort={() => setDepositModalVisible(false)} loading={loading}
                 />
             </>}
-            <LoadingDialog visible={addingTaskModalVisible}/>
         </>
-        //     </View>
     );
 };
 
