@@ -1,9 +1,11 @@
 import React from 'react';
-import {Animated, Dimensions, StatusBar, StyleSheet, Text, View,} from 'react-native';
+import {Animated, Dimensions, StatusBar, StyleSheet, View,} from 'react-native';
 import {ExpandingDot} from 'react-native-animated-pagination-dots';
-import {Button, Dialog, IconButton, Portal, SegmentedButtons, TextInput} from "react-native-paper";
+import {Button, IconButton, SegmentedButtons, TextInput} from "react-native-paper";
 import auth from '@react-native-firebase/auth';
 import {useSafeAreaInsets} from "react-native-safe-area-context";
+import LoginFailedDialog from "./dialogs/LoginFailed";
+import VerifyEmail from "./dialogs/VerifyEmail";
 
 const {width} = Dimensions.get('screen');
 
@@ -17,7 +19,7 @@ interface PageItem {
 }
 
 
-async function onEmailRegisterButtonPress(email: string, password: string, setLoginFailedMessage: React.Dispatch<string | null>, showDialog: () => void) {
+async function onEmailRegisterButtonPress(email: string, password: string, showVerifyDialog: () => void, setLoginFailedMessage: React.Dispatch<string | null>) {
     return (
         auth()
             .createUserWithEmailAndPassword(email, password)
@@ -32,7 +34,7 @@ async function onEmailRegisterButtonPress(email: string, password: string, setLo
                                     'Authorization': 'Bearer ' + token
                                 }
                             }).then(() => {
-                                showDialog()
+                                showVerifyDialog()
                             })
                         })
                     })
@@ -50,10 +52,16 @@ async function onEmailRegisterButtonPress(email: string, password: string, setLo
     )
 }
 
-async function onEmailLoginButtonPress(email: string, password: string, navigation: any, setLoginFailedMessage: React.Dispatch<string | null>) {
+async function onEmailLoginButtonPress(email: string, password: string, navigation: any, showVerifyDialog: () => void, setLoginFailedMessage: React.Dispatch<string | null>) {
     return auth()
         .signInWithEmailAndPassword(email, password)
-        .then(() => {
+        .then((user) => {
+            // メールアドレスが認証されてない場合はダイアログを表示
+            if (!user.user.emailVerified) {
+                user.user.sendEmailVerification().then(() => {
+                    showVerifyDialog()
+                })
+            }
             navigation.reset({
                 index: 0,
                 routes: [{name: 'AppDrawer'}]
@@ -68,11 +76,11 @@ async function onEmailLoginButtonPress(email: string, password: string, navigati
 const LoginElements = ({navigation}) => {
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
-    const [dialogVisible, setDialogVisible] = React.useState(false);
-    const [emailLoginLoading, setEmailLoginLoading] = React.useState(false);
+    const [verifyDialogVisible, setVerifyDialogVisible] = React.useState(false);
+    const [loading, setLoading] = React.useState(false);
     const [inputMode, setInputMode] = React.useState<"login" | "register">("login");
     const [loginFailedMessage, setLoginFailedMessage] = React.useState<string | null>(null);
-    const showDialog = () => setDialogVisible(true)
+    const showVerifyDialog = () => setVerifyDialogVisible(true)
     return (
         <>
             <View style={{marginTop: 10, width: width * 0.7}}>
@@ -96,7 +104,7 @@ const LoginElements = ({navigation}) => {
                 <TextInput
                     style={{marginTop: 10}}
                     label={"メールアドレス"}
-                    disabled={emailLoginLoading}
+                    disabled={loading}
                     autoComplete={"email"}
                     textContentType={"emailAddress"}
                     value={email}
@@ -107,7 +115,7 @@ const LoginElements = ({navigation}) => {
                         key={"loginPasswordInput"}
                         style={{marginTop: 10}}
                         label={"パスワード"}
-                        disabled={emailLoginLoading}
+                        disabled={loading}
                         secureTextEntry
                         autoComplete={"password"}
                         textContentType={"password"}
@@ -118,7 +126,7 @@ const LoginElements = ({navigation}) => {
                         key={"registerPasswordInput"}
                         style={{marginTop: 10}}
                         label={"パスワードを設定"}
-                        disabled={emailLoginLoading}
+                        disabled={loading}
                         secureTextEntry
                         autoComplete={"new-password"}
                         textContentType={"newPassword"}
@@ -131,54 +139,27 @@ const LoginElements = ({navigation}) => {
                 style={{borderRadius: 7, marginTop: 10}}
                 icon={inputMode === "login" ? "login" : "account-plus"}
                 mode={"contained"}
-                loading={emailLoginLoading}
-                disabled={emailLoginLoading}
+                loading={loading}
+                disabled={loading}
                 onPress={() => {
-                    setEmailLoginLoading(true)
+                    setLoading(true)
                     if (inputMode === "login") {
-                        onEmailLoginButtonPress(email, password, navigation, setLoginFailedMessage).then(() => {
-                            setEmailLoginLoading(false)
+                        onEmailLoginButtonPress(email, password, navigation, showVerifyDialog, setLoginFailedMessage).then(() => {
+                            setLoading(false)
                         })
                     } else {
-                        onEmailRegisterButtonPress(email, password, setLoginFailedMessage, showDialog).then(() => {
-                            setEmailLoginLoading(false)
+                        onEmailRegisterButtonPress(email, password, showVerifyDialog, setLoginFailedMessage).then(() => {
+                            setLoading(false)
                         })
                     }
                 }}
             >
                 {inputMode === "login" ? "ログイン" : "新規登録"}
             </Button>
-            {/*  dialog  */}
-            <Portal>
-                <Dialog visible={dialogVisible} onDismiss={() => {
-                    setDialogVisible(false)
-                }}>
-                    <Dialog.Title>メールアドレスを認証</Dialog.Title>
-                    <Dialog.Content>
-                        <Text>ご入力のメールアドレスに確認メールを送信しました。ご確認ください。</Text>
-                        <Text>確認が完了しましたら、完了ボタンを押してください</Text>
-                    </Dialog.Content>
-                    <Dialog.Actions>
-                        <Button onPress={() => {
-                            setDialogVisible(false)
-                            onEmailRegisterButtonPress(email, password, setLoginFailedMessage, showDialog).then()
-                        }}>完了</Button>
-                    </Dialog.Actions>
-                </Dialog>
-            </Portal>
-            <Portal>
-                <Dialog visible={Boolean(loginFailedMessage)}>
-                    <Dialog.Title>エラー</Dialog.Title>
-                    <Dialog.Content>
-                        <Text>{loginFailedMessage ? loginFailedMessage : ""}</Text>
-                    </Dialog.Content>
-                    <Dialog.Actions>
-                        <Button onPress={() => {
-                            setLoginFailedMessage(null)
-                        }}>閉じる</Button>
-                    </Dialog.Actions>
-                </Dialog>
-            </Portal>
+            {/*  dialogs  */}
+            <VerifyEmail dialogVisible={verifyDialogVisible} setDialogVisible={setVerifyDialogVisible}
+                         onVerified={() => onEmailLoginButtonPress(email, password, navigation, showVerifyDialog, setLoginFailedMessage)}/>
+            <LoginFailedDialog loginFailedMessage={loginFailedMessage} setLoginFailedMessage={setLoginFailedMessage}/>
         </>
     )
 }
