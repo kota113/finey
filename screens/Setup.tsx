@@ -1,11 +1,12 @@
 import React from 'react';
 import {Animated, Dimensions, StatusBar, StyleSheet, View,} from 'react-native';
 import {ExpandingDot} from 'react-native-animated-pagination-dots';
-import {Button, IconButton, SegmentedButtons, TextInput} from "react-native-paper";
+import {Button, IconButton, SegmentedButtons, Text, TextInput} from "react-native-paper";
 import auth from '@react-native-firebase/auth';
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import LoginFailedDialog from "./dialogs/LoginFailed";
 import VerifyEmail from "./dialogs/VerifyEmail";
+import ResetPasswordDialog from "./dialogs/ResetPassword";
 
 const {width} = Dimensions.get('screen');
 
@@ -77,6 +78,7 @@ const LoginElements = ({navigation}) => {
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [verifyDialogVisible, setVerifyDialogVisible] = React.useState(false);
+    const [passwordResetDialogVisible, setPasswordResetDialogVisible] = React.useState(false);
     const [loading, setLoading] = React.useState(false);
     const [inputMode, setInputMode] = React.useState<"login" | "register">("login");
     const [loginFailedMessage, setLoginFailedMessage] = React.useState<string | null>(null);
@@ -140,7 +142,7 @@ const LoginElements = ({navigation}) => {
                 icon={inputMode === "login" ? "login" : "account-plus"}
                 mode={"contained"}
                 loading={loading}
-                disabled={loading}
+                disabled={loading || email === "" || password === ""}
                 onPress={() => {
                     setLoading(true)
                     if (inputMode === "login") {
@@ -156,10 +158,16 @@ const LoginElements = ({navigation}) => {
             >
                 {inputMode === "login" ? "ログイン" : "新規登録"}
             </Button>
+            {/*underlined text to reset password*/}
+            <Text style={{marginTop: 15, color: "white", textDecorationLine: "underline", fontWeight: "bold"}}
+                  onPress={() => setPasswordResetDialogVisible(true)}>パスワードをお忘れですか？
+            </Text>
             {/*  dialogs  */}
             <VerifyEmail dialogVisible={verifyDialogVisible} setDialogVisible={setVerifyDialogVisible}
                          onVerified={() => onEmailLoginButtonPress(email, password, navigation, showVerifyDialog, setLoginFailedMessage)}/>
             <LoginFailedDialog loginFailedMessage={loginFailedMessage} setLoginFailedMessage={setLoginFailedMessage}/>
+            <ResetPasswordDialog visible={passwordResetDialogVisible} setVisible={setPasswordResetDialogVisible}
+                                 setLoginFailedMessage={setLoginFailedMessage}/>
         </>
     )
 }
@@ -177,7 +185,7 @@ const Screen = ({navigation}) => {
             text: "こうなってませんか？",
             description: "後回しにしがちなあなたを応援します",
             image: require('../assets/appImage2.png'),
-            backgroundColor: '#7bcf6e',
+            backgroundColor: 'rgba(255,0,0,0.56)',
         },
         {
             text: "お金の力を借りよう",
@@ -187,7 +195,7 @@ const Screen = ({navigation}) => {
         },
         ...(auth().currentUser ? [] : [{
             text: "はじめましょう",
-            backgroundColor: '#db4747',
+            backgroundColor: '#6ab35e',
             element: (<LoginElements navigation={navigation}/>)
         }])
     ];
