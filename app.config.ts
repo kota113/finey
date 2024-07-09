@@ -5,7 +5,7 @@ export default {
     expo: {
         name: "Finey",
         slug: "Finey",
-        version: "1.0.1",
+        version: "1.0.2",
         orientation: "portrait",
         icon: "./assets/icon.png",
         userInterfaceStyle: "light",
@@ -21,7 +21,7 @@ export default {
             supportsTablet: true,
             bundleIdentifier: "com.kota113.Finey",
             googleServicesFile: process.env.GOOGLE_SERVICE_INFO_PLIST || googleServiceInfoPlist,
-            buildNumber: "1.0.1",
+            buildNumber: "1.0.2",
         },
         android: {
             adaptiveIcon: {
@@ -35,7 +35,7 @@ export default {
             permissions: [
                 'android.permission.SCHEDULE_EXACT_ALARM'
             ],
-            versionCode: 3
+            versionCode: 4
         },
         extra: {
             eas: {
@@ -43,7 +43,6 @@ export default {
             }
         },
         plugins: [
-            "@react-native-google-signin/google-signin",
             "@react-native-firebase/app",
             "@react-native-firebase/auth",
             [
