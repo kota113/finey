@@ -4,10 +4,8 @@ import {Task, TaskFromFirebase, TaskFromLocalStorage} from "../types";
 import * as Notifications from "expo-notifications";
 
 
-// todo: remove localStorage
-
 const storeTasks = async (tasks: Task[]) => {
-    await _storeLocalData("tasks", tasks)
+    await storeLocalData("tasks", tasks)
     // remove notificationId from tasks
     tasks.forEach(task => {
         delete task.notificationId
@@ -20,10 +18,11 @@ const storeTasks = async (tasks: Task[]) => {
 //     await _storeLocalData(key, value)
 // }
 
-const _storeLocalData = async (key: string, value: any) => {
+const storeLocalData = async (key: string, value: any) => {
     // make it json string if it's not a string
-    const jsonValue = typeof value === "string" ? value : JSON.stringify(value);
-    await AsyncStorage.setItem(key, jsonValue);
+    let inputString = typeof value === "string" ? value : JSON.stringify(value);
+    inputString = typeof value === "boolean" ? value.toString() : inputString;
+    await AsyncStorage.setItem(key, inputString);
 };
 
 const getTasks = async () => {
@@ -31,7 +30,7 @@ const getTasks = async () => {
     const data = res.data()
     if (data && data.data.length > 0) {
         const firebaseData = data.data
-        const _localData: TaskFromLocalStorage[] = await _getLocalData("tasks") || []
+        const _localData: TaskFromLocalStorage[] = await getLocalData("tasks") || []
         // convert TaskFromLocalStorage to Task. Ensure dueDate is a Date
         const localData: Task[] = _localData.map((task: TaskFromLocalStorage) => {
             return {...task, dueDate: new Date(task.dueDate)}
@@ -80,13 +79,15 @@ const getTasks = async () => {
 //     }
 // }
 
-const _getLocalData = async (key: string) => {
+const getLocalData = async (key: string) => {
     const value = await AsyncStorage.getItem(key);
     // parse the value if it's possible
     try {
         return JSON.parse(value)
     } catch (e) {
-        return value
+        if (value in ["true", "false"]) {
+            return value === "true"
+        } else return value
     }
 };
 
@@ -94,4 +95,4 @@ const clearLocalStorage = async () => {
     await AsyncStorage.clear()
 }
 
-export {storeTasks, getTasks, clearLocalStorage}
+export {storeTasks, getTasks, storeLocalData, getLocalData, clearLocalStorage}

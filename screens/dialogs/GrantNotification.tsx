@@ -10,6 +10,7 @@ import {
 } from "expo-notifications";
 import React, {useEffect} from "react";
 import * as Linking from 'expo-linking';
+import {getLocalData, storeLocalData} from "../../utils/localStorage";
 
 
 function parsePermissions(
@@ -44,11 +45,17 @@ export const GrantNotificationDialog = () => {
     useEffect(() => {
         getPermissionsAsync().then((permissions) => {
             const permission = parsePermissions(permissions, setNotificationPermState);
-            if (permission !== "AUTHORIZED") {
-                setVisible(true)
-            }
+            getLocalData("doNotShowNotificationDialog").then((doNotShow: boolean) => {
+                if (permission !== "AUTHORIZED" && !doNotShow) {
+                    setVisible(true)
+                }
+            })
         })
     }, []);
+
+    const setDoNotShowAgain = async () => {
+        return await storeLocalData("doNotShowNotificationDialog", true)
+    }
 
     function requestPermission() {
         setVisible(false)
@@ -89,7 +96,7 @@ export const GrantNotificationDialog = () => {
 
     return (
         <Portal>
-            <Dialog visible={visible} dismissable={false}>
+            <Dialog visible={visible}>
                 <Dialog.Icon icon={"bell"} color={"#ff8c00"}/>
                 <Dialog.Title style={styles.dialogTitle}>通知を許可してください</Dialog.Title>
                 <Dialog.Content>
@@ -97,17 +104,22 @@ export const GrantNotificationDialog = () => {
                         <>
                             <Text>アプリがタスクの期限を通知するため、権限が必要です。</Text>
                             <Text>次の画面で許可をタップしてください。</Text>
+                            <Text>通知が必要ない場合は、この注意を非表示にできます。</Text>
                         </>
                         : notificationPermState === "DENIED" &&
                         <>
                             <Text>通知が拒否されています。</Text>
                             <Text>設定から通知を許可してください。</Text>
+                            <Text>通知が必要ない場合は、この注意を非表示にできます。</Text>
                         </>
                     }
                 </Dialog.Content>
-                <Dialog.Actions>
+                <Dialog.Actions style={{justifyContent: "space-between"}}>
                     <Button onPress={requestPermission}>
                         次へ
+                    </Button>
+                    <Button onPress={() => setDoNotShowAgain().then(() => setVisible(false))}>
+                        二度と表示しない
                     </Button>
                 </Dialog.Actions>
             </Dialog>
