@@ -102,7 +102,7 @@ export const GrantNotificationDialog = () => {
                 <Dialog.Content>
                     {notificationPermState === "UNDETERMINED" ?
                         <>
-                            <Text>アプリがタスクの期限を通知するため、権限が必要です。</Text>
+                            <Text>タスクの期限を通知するため、権限が必要です。</Text>
                             <Text>次の画面で許可をタップしてください。</Text>
                             <Text>通知が必要ない場合は、この注意を非表示にできます。</Text>
                         </>
@@ -115,11 +115,11 @@ export const GrantNotificationDialog = () => {
                     }
                 </Dialog.Content>
                 <Dialog.Actions style={{justifyContent: "space-between"}}>
-                    <Button onPress={requestPermission}>
-                        次へ
-                    </Button>
                     <Button onPress={() => setDoNotShowAgain().then(() => setVisible(false))}>
                         二度と表示しない
+                    </Button>
+                    <Button mode={"contained"} contentStyle={{paddingHorizontal: 7}} onPress={requestPermission}>
+                        次へ
                     </Button>
                 </Dialog.Actions>
             </Dialog>
