@@ -1,11 +1,12 @@
 const googleServicesJson: string = '/mnt/c/Users/iwa12/WebstormProjects/Finey/creds/google-services.json'
 const googleServiceInfoPlist: string = '/mnt/c/Users/iwa12/WebstormProjects/Finey/creds/GoogleService-Info.plist'
+const versionString: string = '1.0.3'
 
 export default {
     expo: {
         name: "Finey",
         slug: "Finey",
-        version: "1.0.2",
+        version: versionString,
         orientation: "portrait",
         icon: "./assets/icon.png",
         userInterfaceStyle: "light",
@@ -21,7 +22,7 @@ export default {
             supportsTablet: true,
             bundleIdentifier: "com.kota113.Finey",
             googleServicesFile: process.env.GOOGLE_SERVICE_INFO_PLIST || googleServiceInfoPlist,
-            buildNumber: "1.0.2",
+            buildNumber: versionString,
         },
         android: {
             adaptiveIcon: {
@@ -35,7 +36,7 @@ export default {
             permissions: [
                 'android.permission.SCHEDULE_EXACT_ALARM'
             ],
-            versionCode: 4
+            versionCode: 5
         },
         extra: {
             eas: {
