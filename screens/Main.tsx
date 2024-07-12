@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {Alert, ScrollView, StyleSheet, View} from "react-native";
+import {Alert, RefreshControl, ScrollView, StyleSheet, View} from "react-native";
 import {ActivityIndicator, Appbar, Chip, FAB, IconButton, List, Text, Tooltip, useTheme} from "react-native-paper";
 import {getTasks, storeTasks} from "../utils/localStorage";
 import * as Notifications from "expo-notifications";
@@ -23,7 +23,7 @@ const TopAppBar = ({navigation}) => (
 )
 
 
-const TaskListItem = ({index, task, deleteTask, markTaskComplete, markTaskIncomplete}: {
+const TaskList = ({index, task, deleteTask, markTaskComplete, markTaskIncomplete}: {
     index: number,
     task: Task,
     deleteTask: (task: Task) => void,
@@ -107,42 +107,66 @@ const TaskListItem = ({index, task, deleteTask, markTaskComplete, markTaskIncomp
 }
 
 
-const TaskList = ({tasks, deleteTask, markTaskComplete, markTaskIncomplete}) => {
+const TaskListGroup = ({tasks, deleteTask, markTaskComplete, markTaskIncomplete}) => {
     const theme = useTheme()
+    const [refreshing, setRefreshing] = useState(false);
+    const onRefresh = React.useCallback(() => {
+        setRefreshing(true);
+        loadData();
+        setTimeout(() => {
+            setRefreshing(false);
+        }, 2000);
+    }, []);
+    let outdatedTasks: Task[] = [];
+    let completedTasks: Task[] = [];
+    let sections: { title: string, data: Task[] }[] = [];
+    let groupedTasks: object = {};
 
-    // Filter out outdated tasks
-    const outdatedTasks = tasks.filter((task: Task) => (task.dueDate.getTime() < new Date().getTime()) && !task.isCompleted);
+    function loadData() {
+        // Filter out outdated tasks
+        outdatedTasks = tasks.filter((task: Task) => (task.dueDate.getTime() < new Date().getTime()) && !task.isCompleted);
 
-    // Filter out completed tasks
-    const completedTasks = tasks.filter((task: Task) => task.isCompleted);
+        // Filter out completed tasks
+        completedTasks = tasks.filter((task: Task) => task.isCompleted);
 
 
-    // Group tasks by due date
-    const groupedTasks = tasks.reduce((groups: object, task: Task) => {
-        if (task.isCompleted) return groups; // Don't group completed tasks
-        if (outdatedTasks.includes(task)) return groups; // Don't group completed tasks
-        const date = task.dueDate.toISOString().split('T')[0]; // Get the date part of the timestamp
-        if (!groups[date]) {
-            groups[date] = [];
-        }
-        groups[date].push(task);
-        return groups;
-    }, {});
+        // Group tasks by due date
+        groupedTasks = tasks.reduce((groups: object, task: Task) => {
+            if (task.isCompleted) return groups; // Don't group completed tasks
+            if (outdatedTasks.includes(task)) return groups; // Don't group completed tasks
+            const date = task.dueDate.toISOString().split('T')[0]; // Get the date part of the timestamp
+            if (!groups[date]) {
+                groups[date] = [];
+            }
+            groups[date].push(task);
+            return groups;
+        }, {});
 
-    // Convert the groups object to an array of sections
-    let sections = Object.keys(groupedTasks).map(date => ({
-        title: `${new Date(date).getMonth() + 1}月${new Date(date).getDate()}日(${["日", "月", "火", "水", "木", "金", "土"][new Date(date).getDay()]})`,
-        data: groupedTasks[date].sort((a: Task, b: Task) => a.dueDate.getTime() - b.dueDate.getTime()) // Sort tasks by time within each group
-    }));
+        // Convert the groups object to an array of sections
+        sections = Object.keys(groupedTasks).map(date => ({
+            title: `${new Date(date).getMonth() + 1}月${new Date(date).getDate()}日(${["日", "月", "火", "水", "木", "金", "土"][new Date(date).getDay()]})`,
+            data: groupedTasks[date].sort((a: Task, b: Task) => a.dueDate.getTime() - b.dueDate.getTime()) // Sort tasks by time within each group
+        }));
 
-    sections = sections.sort((a, b) => {
-        const dateA = new Date(a.title);
-        const dateB = new Date(b.title);
-        return dateA.getTime() - dateB.getTime();
-    });
+        sections = sections.sort((a, b) => {
+            const dateA = new Date(a.title);
+            const dateB = new Date(b.title);
+            return dateA.getTime() - dateB.getTime();
+        });
+    }
+
+    loadData();
 
     return (
-        <ScrollView style={{flex: 1, paddingTop: 5}}>
+        <ScrollView
+            style={{flex: 1, paddingTop: 5}}
+            refreshControl={
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                />
+            }
+        >
             {tasks.length > 0 ?
                 sections.map((section, index) => (
                     <List.Section
@@ -152,7 +176,7 @@ const TaskList = ({tasks, deleteTask, markTaskComplete, markTaskIncomplete}) => 
                         {/*  don't use FlatList  */}
                         {section.data.map((task: Task, index: number) => {
                             return (
-                                <TaskListItem
+                                <TaskList
                                     key={index}
                                     index={index}
                                     task={task}
@@ -177,7 +201,7 @@ const TaskList = ({tasks, deleteTask, markTaskComplete, markTaskIncomplete}) => 
             {completedTasks.length > 0 &&
                 <List.Accordion title={"完了済み"}>
                     {completedTasks.map((task: Task, index: number) => (
-                        <TaskListItem
+                        <TaskList
                             key={index}
                             index={index}
                             task={task}
@@ -191,7 +215,7 @@ const TaskList = ({tasks, deleteTask, markTaskComplete, markTaskIncomplete}) => 
             {outdatedTasks.length > 0 &&
                 <List.Accordion title={"期限切れ"} titleStyle={{color: theme.colors.error}}>
                     {outdatedTasks.map((task: Task, index: number) => (
-                        <TaskListItem
+                        <TaskList
                             key={index}
                             index={index}
                             task={task}
@@ -320,7 +344,7 @@ const Screen = ({navigation}) => {
                 {loadingTasks ?
                     <ActivityIndicator size={"large"} style={{marginTop: 20, flex: 1}}/>
                     :
-                    <TaskList tasks={tasks} deleteTask={setTaskToDelete} markTaskComplete={markTaskComplete}
+                    <TaskListGroup tasks={tasks} deleteTask={setTaskToDelete} markTaskComplete={markTaskComplete}
                               markTaskIncomplete={markTaskIncomplete}/>
                 }
             </View>
