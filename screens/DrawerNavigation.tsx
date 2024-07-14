@@ -8,7 +8,8 @@ import {useSafeAreaInsets} from "react-native-safe-area-context";
 import auth from "@react-native-firebase/auth";
 import {clearLocalStorage, getLocalData} from "../utils/localStorage";
 import {PaymentProvider} from "../types";
-import {useEffect} from "react";
+import {useCallback} from "react";
+import {useFocusEffect} from "@react-navigation/native";
 
 
 registerTranslation('ja', {
@@ -55,11 +56,15 @@ interface DrawerItem {
 const DrawerContent = ({navigation}) => {
     const insets = useSafeAreaInsets()
     let paymentProvider: PaymentProvider
-    useEffect(() => {
-        getLocalData("paymentProvider").then((provider: PaymentProvider) => {
-            paymentProvider = provider
-        })
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            getLocalData("paymentProvider").then((provider: PaymentProvider) => {
+                paymentProvider = provider
+            })
+            return () => {
+            };
+        }, [])
+    );
     const DrawerItems = [
         {
             label: paymentProvider === "stripe" ? 'お支払い方法' : 'カード決済を設定',
