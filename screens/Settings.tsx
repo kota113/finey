@@ -58,7 +58,7 @@ const PaymentProviderDialog = ({
                         borderRadius: 15
                     }}
                     title="PayPay"
-                    description="PayPayアカウントの残高から決済を行います。PayPayアカウントとの連携が必要です。"
+                    description="PayPayアカウントの残高から決済を行います。"
                     left={props => <List.Icon {...props} icon="cellphone"/>}
                     onPress={() => {
                         setSelected("paypay");

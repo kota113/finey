@@ -63,16 +63,17 @@ export default ({navigation}) => {
                 }}>
                 <Text variant={"displaySmall"} style={{marginBottom: 12}}>カード決済を設定</Text>
                 <Text
-                    variant={"bodyMedium"}>クレジットカード決済を設定しても、設定からいつでもPayPay決済に戻すことが可能です。</Text>
+                    variant={"bodyMedium"}>設定後も、設定からいつでもPayPay決済に戻すことが可能です。</Text>
                 <Card mode={"outlined"} style={{marginTop: 25}}>
                     <Card.Title
-                        title="カード情報は安全に保管"
+                        title="カード情報の保管"
                         left={(props) => <Avatar.Icon {...props} icon={"lock"} size={47}/>}
                     />
                     <Card.Content>
-                        <Text>ご入力頂いたカード情報は、当方のサーバーでは保存されず、開発者は閲覧できません。</Text>
-                        <Text>このアプリは米Stripe社が提供する決済サービスを使用しています。</Text>
-                        <Text>詳しくはStripe社のプライバシーポリシーをご確認ください。</Text>
+                        <Text>・開発者は決済情報を閲覧できません</Text>
+                        <Text>・暗号化して送信されます</Text>
+                        <Text>・米Stripe社のサービスを使用しています</Text>
+                        <Text variant={"bodySmall"}>※詳しくはStripe社のプライバシーポリシーをご確認ください。</Text>
                     </Card.Content>
                 </Card>
                 <Card mode={"outlined"} style={{marginTop: 17}}>
@@ -81,8 +82,8 @@ export default ({navigation}) => {
                         left={(props) => <Avatar.Icon {...props} icon={"credit-card"} size={47}/>}
                     />
                     <Card.Content>
-                        <Text>カード情報の入力は一度だけで、以降のお支払いは自動的に行われます。</Text>
-                        <Text>決済情報はログインしている全端末で共有されます。</Text>
+                        <Text>・以降のお支払いは自動的に行われます</Text>
+                        <Text>・決済情報は端末に関わらず使用できます</Text>
                     </Card.Content>
                 </Card>
                 <View style={{
