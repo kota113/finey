@@ -5,12 +5,15 @@ import auth from "@react-native-firebase/auth";
 import {initializePaymentSheet, openPaymentSheet} from "../utils/stripePaymentSheet";
 import {storeLocalData} from "../utils/localStorage";
 import {Image, View} from "react-native";
+import {useSafeAreaInsets} from "react-native-safe-area-context";
+import {StatusBar} from "expo-status-bar";
 
 export default ({navigation}) => {
     const [loading, setLoading] = useState(false);
     const [successDialogVisible, setSuccessDialogVisible] = useState(false);
     const {initPaymentSheet, presentPaymentSheet} = useStripe();
     const theme = useTheme()
+    const safeAreaInsets = useSafeAreaInsets();
 
     async function launchDialog() {
         setLoading(true)
@@ -49,8 +52,15 @@ export default ({navigation}) => {
         <StripeProvider
             publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE}
         >
+            <StatusBar style={"auto"}/>
             <View
-                style={{flex: 1, backgroundColor: theme.colors.background, paddingHorizontal: 20, paddingVertical: 25}}>
+                style={{
+                    flex: 1,
+                    backgroundColor: theme.colors.background,
+                    paddingHorizontal: 20,
+                    paddingVertical: 25,
+                    marginTop: safeAreaInsets.top
+                }}>
                 <Text variant={"displaySmall"} style={{marginBottom: 7}}>カード決済を設定</Text>
                 <Text
                     variant={"bodyMedium"}>クレジットカード決済を設定しても、設定からいつでもPayPay決済に戻すことが可能です。</Text>
