@@ -57,8 +57,8 @@ export default ({navigation}) => {
                 style={{
                     flex: 1,
                     backgroundColor: theme.colors.background,
-                    paddingHorizontal: 40,
-                    paddingVertical: 25,
+                    paddingHorizontal: 20,
+                    paddingVertical: 35,
                     marginTop: safeAreaInsets.top
                 }}>
                 <Text variant={"displaySmall"} style={{marginBottom: 12}}>カード決済を設定</Text>
