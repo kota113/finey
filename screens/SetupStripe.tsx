@@ -4,7 +4,7 @@ import {useState} from "react";
 import auth from "@react-native-firebase/auth";
 import {initializePaymentSheet, openPaymentSheet} from "../utils/stripePaymentSheet";
 import {storeLocalData} from "../utils/localStorage";
-import {Image, View} from "react-native";
+import {View} from "react-native";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {StatusBar} from "expo-status-bar";
 
@@ -66,26 +66,23 @@ export default ({navigation}) => {
                     variant={"bodyMedium"}>クレジットカード決済を設定しても、設定からいつでもPayPay決済に戻すことが可能です。</Text>
                 <Card mode={"outlined"} style={{marginTop: 25}}>
                     <Card.Title
-                        title="引き続きPayPayを利用"
-                        left={(props) => <Image {...props} source={require("../assets/paypay-logo.jpg")}
-                                                style={{height: 45, width: 45, borderRadius: 5}}/>}
+                        title="カード情報は安全に保管"
+                        left={(props) => <Avatar.Icon {...props} icon={"lock"} size={47}/>}
                     />
                     <Card.Content>
-                        <Text>・都度決済が必要</Text>
-                        <Text>・返金されるまで時間がかかる</Text>
-                        <Text>・PayPayが利用可能な端末でのみ使用可能</Text>
+                        <Text>ご入力頂いたカード情報は、当方のサーバーでは保存されず、開発者は閲覧できません。</Text>
+                        <Text>このアプリは米Stripe社が提供する決済サービスを使用しています。</Text>
+                        <Text>詳しくはStripe社のプライバシーポリシーをご確認ください。</Text>
                     </Card.Content>
                 </Card>
                 <Card mode={"outlined"} style={{marginTop: 17}}>
                     <Card.Title
-                        title="クレジットカード決済"
+                        title="入力は一度だけ"
                         left={(props) => <Avatar.Icon {...props} icon={"credit-card"} size={47}/>}
                     />
                     <Card.Content>
-                        <Text>・アプリ内で自動的に決済が完了</Text>
-                        <Text>・タスクの達成を確認後、即時に返金が反映</Text>
-                        <Text> ※カード発行会社によって異なります</Text>
-                        <Text>・ご利用の全端末で使用可能</Text>
+                        <Text>カード情報の入力は一度だけで、以降のお支払いは自動的に行われます。</Text>
+                        <Text>決済情報はログインしている全端末で共有されます。</Text>
                     </Card.Content>
                 </Card>
                 <View style={{

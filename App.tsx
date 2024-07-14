@@ -17,9 +17,10 @@ import storage from '@react-native-firebase/storage';
 import materialTheme from "./materialTheme";
 import * as Sentry from "@sentry/react-native";
 import PaymentHistory from "./screens/PaymentHistory";
-import ConfigurePayment from "./screens/ConfigurePayment";
 import {getLocalData, storeLocalData} from "./utils/localStorage";
 import {PaymentProvider} from "./types";
+import SetupStripe from "./screens/SetupStripe";
+import SetupPayPay from "./screens/SetupPayPay";
 
 const Stack = createNativeStackNavigator();
 
@@ -91,7 +92,8 @@ const StackNavigator = () => {
                 <Stack.Screen name="AppDrawer" component={AppDrawer} options={{headerShown: false}}/>
                 <Stack.Screen name="Settings" component={Settings} options={{headerShown: false}}/>
                 <Stack.Screen name="EditPayment" component={EditPayment} options={{headerShown: false}}/>
-                <Stack.Screen name="ConfigurePayment" component={ConfigurePayment} options={{headerShown: false}}/>
+                <Stack.Screen name="SetupStripe" component={SetupStripe} options={{headerShown: false}}/>
+                <Stack.Screen name="SetupPayPay" component={SetupPayPay} options={{headerShown: false}}/>
                 <Stack.Screen name="Setup" component={Setup} options={{headerShown: false}}/>
                 <Stack.Screen name="Help" component={Setup} options={{headerShown: false}}/>
                 <Stack.Screen name="PaymentHistory" component={PaymentHistory} options={{headerShown: false}}/>

@@ -4,7 +4,7 @@ import * as Linking from "expo-linking";
 import appConfig from "../app.config";
 import {useCallback, useState} from "react";
 import {PaymentProvider} from "../types";
-import {getLocalData, storeLocalData} from "../utils/localStorage";
+import {getLocalData} from "../utils/localStorage";
 import {useFocusEffect} from "@react-navigation/native";
 
 
@@ -45,7 +45,7 @@ const PaymentProviderDialog = ({
                     }}
                     contentStyle={{borderRadius: 15}}
                     title="クレジットカード"
-                    description="クレジットカードを登録して、決済をスムーズに行いましょう"
+                    description="クレジットカードを登録して、決済をスムーズに行います。"
                     left={props => <List.Icon {...props} icon="credit-card-outline"/>}
                     onPress={() => {
                         setSelected("stripe")
@@ -58,7 +58,7 @@ const PaymentProviderDialog = ({
                         borderRadius: 15
                     }}
                     title="PayPay"
-                    description="都度決済が必要です"
+                    description="PayPayアカウントの残高から決済を行います。PayPayアカウントとの連携が必要です。"
                     left={props => <List.Icon {...props} icon="cellphone"/>}
                     onPress={() => {
                         setSelected("paypay");
@@ -94,11 +94,9 @@ const Settings = ({navigation}: { navigation: any }) => {
         setPaymentDialogVisible(false)
         getLocalData("paymentProvider").then((provider: PaymentProvider) => {
             if (selectedPaymentProvider === "stripe" && provider === "paypay") {
-                navigation.navigate("ConfigurePayment")
-            } else {
-                storeLocalData("paymentProvider", selectedPaymentProvider).then(() => {
-                    console.log("Stored payment provider")
-                })
+                navigation.navigate("SetupStripe")
+            } else if (selectedPaymentProvider === "paypay" && provider === "stripe") {
+                navigation.navigate("SetupPayPay")
             }
         })
     }
