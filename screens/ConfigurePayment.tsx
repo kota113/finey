@@ -57,11 +57,11 @@ export default ({navigation}) => {
                 style={{
                     flex: 1,
                     backgroundColor: theme.colors.background,
-                    paddingHorizontal: 20,
+                    paddingHorizontal: 40,
                     paddingVertical: 25,
                     marginTop: safeAreaInsets.top
                 }}>
-                <Text variant={"displaySmall"} style={{marginBottom: 7}}>カード決済を設定</Text>
+                <Text variant={"displaySmall"} style={{marginBottom: 12}}>カード決済を設定</Text>
                 <Text
                     variant={"bodyMedium"}>クレジットカード決済を設定しても、設定からいつでもPayPay決済に戻すことが可能です。</Text>
                 <Card mode={"outlined"} style={{marginTop: 25}}>
