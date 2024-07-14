@@ -37,9 +37,9 @@ export default ({navigation}) => {
                         left={(props) => <Avatar.Icon {...props} icon={"bank"} size={47}/>}
                     />
                     <Card.Content>
-                        <Text>・PayPayの残高から決済されます。</Text>
-                        <Text>・残高が不足する場合はエラーとなります。</Text>
-                        <Text>・PayPayに登録のカードからは決済できません。</Text>
+                        <Text>・PayPayの残高から決済されます</Text>
+                        <Text>・残高が不足する場合はエラーとなります</Text>
+                        <Text>・PayPayに登録のカードからは決済できません</Text>
                     </Card.Content>
                 </Card>
                 <Card mode={"outlined"} style={{marginTop: 25}}>
@@ -58,8 +58,8 @@ export default ({navigation}) => {
                         left={(props) => <Avatar.Icon {...props} icon={"refresh"} size={47}/>}
                     />
                     <Card.Content>
-                        <Text>・定期的な再連携が必要です。</Text>
-                        <Text>・決済ごとの連携は必要ありません。</Text>
+                        <Text>・定期的な再連携が必要です</Text>
+                        <Text>・決済ごとの連携は必要ありません</Text>
                     </Card.Content>
                 </Card>
                 <View style={{
