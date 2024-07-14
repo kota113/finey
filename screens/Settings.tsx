@@ -1,8 +1,11 @@
 import {FlatList, View} from "react-native";
-import {Appbar, List, Snackbar, Text} from "react-native-paper";
+import {Appbar, Button, Dialog, List, Portal, Snackbar, Text, useTheme} from "react-native-paper";
 import * as Linking from "expo-linking";
 import appConfig from "../app.config";
-import {useState} from "react";
+import {useCallback, useState} from "react";
+import {PaymentProvider} from "../types";
+import {getLocalData, storeLocalData} from "../utils/localStorage";
+import {useFocusEffect} from "@react-navigation/native";
 
 
 interface SettingsItem {
@@ -20,30 +23,104 @@ const TopAppBar = ({navigation}) => (
     </Appbar.Header>
 )
 
+
+const PaymentProviderDialog = ({
+                                   visible,
+                                   setVisible,
+                                   selected,
+                                   setSelected,
+                                   selectedBackgroundColor,
+                                   theme,
+                                   onSubmit
+                               }) => (
+    <Portal>
+        <Dialog visible={visible} onDismiss={() => setVisible(false)}>
+            <Dialog.Title>決済方法</Dialog.Title>
+            <Dialog.Content>
+                <List.Item
+                    rippleColor={theme.colors.primary}
+                    style={{
+                        backgroundColor: selected === "stripe" ? selectedBackgroundColor : "transparent",
+                        borderRadius: 15
+                    }}
+                    contentStyle={{borderRadius: 15}}
+                    title="クレジットカード"
+                    description="クレジットカードを登録して、決済をスムーズに行いましょう"
+                    left={props => <List.Icon {...props} icon="credit-card-outline"/>}
+                    onPress={() => {
+                        setSelected("stripe")
+                    }}
+                />
+                <List.Item
+                    rippleColor={theme.colors.primary}
+                    style={{
+                        backgroundColor: selected === "paypay" ? selectedBackgroundColor : "transparent",
+                        borderRadius: 15
+                    }}
+                    title="PayPay"
+                    description="都度決済が必要です"
+                    left={props => <List.Icon {...props} icon="cellphone"/>}
+                    onPress={() => {
+                        setSelected("paypay");
+                    }}
+                />
+            </Dialog.Content>
+            <Dialog.Actions>
+                <Button onPress={() => setVisible(false)}>閉じる</Button>
+                <Button onPress={onSubmit}>決定</Button>
+            </Dialog.Actions>
+        </Dialog>
+    </Portal>
+)
+
+
 const Settings = ({navigation}: { navigation: any }) => {
     const [snackbarVisible, setSnackbarVisible] = useState(false);
+    const [paymentDialogVisible, setPaymentDialogVisible] = useState(false);
+    const [selectedPaymentProvider, setSelectedPaymentProvider] = useState<PaymentProvider>(undefined);
+    const theme = useTheme()
+
+    useFocusEffect(
+        useCallback(() => {
+            getLocalData("paymentProvider").then((provider: PaymentProvider) => {
+                setSelectedPaymentProvider(provider)
+            })
+            return () => {
+            };
+        }, [])
+    );
+
+    function onSubmitPaymentProvider() {
+        setPaymentDialogVisible(false)
+        getLocalData("paymentProvider").then((provider: PaymentProvider) => {
+            if (selectedPaymentProvider === "stripe" && provider === "paypay") {
+                navigation.navigate("ConfigurePayment")
+            } else {
+                storeLocalData("paymentProvider", selectedPaymentProvider).then(() => {
+                    console.log("Stored payment provider")
+                })
+            }
+        })
+    }
+
     const settings: SettingsItem[] = [
+        {
+            label: "決済方法",
+            icon: "credit-card-settings-outline",
+            onPress: () => setPaymentDialogVisible(true)
+        },
         {
             label: "通知",
             icon: "bell",
             onPress: () => Linking.openSettings()
         },
-        // {
-        //     label: "言語",
-        //     icon: "translate",
-        //     screen: "日本語"
-        // },
-        // {
-        //     label: "テーマ",
-        //     icon: "palette",
-        //     screen: "ライト"
-        // },
         {
             label: "バージョン",
             icon: "information",
             onPress: () => setSnackbarVisible(true)
         }
     ]
+    const selectedBackgroundColor = "rgba(0,108,83,0.25)"
     return (
         <>
             <FlatList
@@ -73,6 +150,15 @@ const Settings = ({navigation}: { navigation: any }) => {
                 }}>
                 <Text style={{color: "white"}}>バージョン {appConfig.expo.version}</Text>
             </Snackbar>
+            <PaymentProviderDialog
+                visible={paymentDialogVisible}
+                setVisible={setPaymentDialogVisible}
+                selected={selectedPaymentProvider}
+                setSelected={setSelectedPaymentProvider}
+                selectedBackgroundColor={selectedBackgroundColor}
+                theme={theme}
+                onSubmit={onSubmitPaymentProvider}
+            />
         </>
     )
 }

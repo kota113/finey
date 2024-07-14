@@ -6,7 +6,9 @@ import {registerTranslation} from "react-native-paper-dates";
 import * as Notifications from "expo-notifications";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import auth from "@react-native-firebase/auth";
-import {clearLocalStorage} from "../utils/localStorage";
+import {clearLocalStorage, getLocalData} from "../utils/localStorage";
+import {PaymentProvider} from "../types";
+import {useEffect} from "react";
 
 
 registerTranslation('ja', {
@@ -52,10 +54,16 @@ interface DrawerItem {
 
 const DrawerContent = ({navigation}) => {
     const insets = useSafeAreaInsets()
-    const DrawerItems: DrawerItem[] = [
+    let paymentProvider: PaymentProvider
+    useEffect(() => {
+        getLocalData("paymentProvider").then((provider: PaymentProvider) => {
+            paymentProvider = provider
+        })
+    }, []);
+    const DrawerItems = [
         {
-            label: 'お支払い',
-            screen: 'EditPayment',
+            label: paymentProvider === "stripe" ? 'お支払い方法' : 'カード決済を設定',
+            screen: paymentProvider === "stripe" ? 'EditPayment' : 'ConfigurePayment',
             icon: 'credit-card'
         },
         {

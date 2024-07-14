@@ -39,3 +39,5 @@ export interface ProofFile {
     uri: string;
     thumbnail?: string;
 }
+
+export type PaymentProvider = "stripe" | "paypay";

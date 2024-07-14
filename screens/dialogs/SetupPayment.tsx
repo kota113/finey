@@ -1,71 +1,38 @@
-import {Alert} from "react-native";
-import {ActivityIndicator, Button, Dialog, Portal, Text} from "react-native-paper";
+import {ActivityIndicator, Button, Dialog, Portal, RadioButton, Text} from "react-native-paper";
 import {useEffect, useState} from "react";
 import {StripeProvider, useStripe} from "@stripe/stripe-react-native";
 import auth from "@react-native-firebase/auth";
+import {getLocalData, storeLocalData} from "../../utils/localStorage";
+import {PaymentProvider} from "../../types";
+import {initializePaymentSheet, openPaymentSheet} from "../../utils/stripePaymentSheet";
+
 
 export default function SetupPayment() {
     const [visible, setVisible] = useState(false);
     const {initPaymentSheet, presentPaymentSheet} = useStripe();
     const [loading, setLoading] = useState(true);
     const [successDialogVisible, setSuccessDialogVisible] = useState(false);
+    const [selectedPaymentProvider, setSelectedPaymentProvider] = useState<PaymentProvider>("stripe");
 
     function onSubmit() {
         if (!loading) {
-            openPaymentSheet().then((res) => {
-                if (res === true) {
+            if (selectedPaymentProvider === "stripe") {
+                openPaymentSheet(presentPaymentSheet).then((res) => {
+                    if (res === true) {
+                        storeLocalData("paymentProvider", "stripe").then(() => {
+                            setVisible(false);
+                            setSuccessDialogVisible(true);
+                        })
+                    }
+                })
+            } else {
+                storeLocalData("paymentProvider", "paypay").then(() => {
                     setVisible(false);
                     setSuccessDialogVisible(true);
-                }
-            });
+                })
+            }
         }
     }
-
-    const fetchPaymentSheetParams = async () => {
-        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/setup-payment-intent`, {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + await auth().currentUser.getIdToken(),
-                'Content-Type': 'application/json',
-            },
-        });
-        const {setupIntent, ephemeralKey, customer} = await response.json();
-
-        return {
-            setupIntent,
-            ephemeralKey,
-            customer,
-        };
-    };
-
-    const initializePaymentSheet = async () => {
-        const {
-            setupIntent,
-            ephemeralKey,
-            customer,
-        } = await fetchPaymentSheetParams();
-
-        const {error} = await initPaymentSheet({
-            merchantDisplayName: "Finey",
-            customerId: customer,
-            customerEphemeralKeySecret: ephemeralKey,
-            setupIntentClientSecret: setupIntent,
-        });
-        if (!error) {
-            setLoading(true);
-        }
-    };
-
-    const openPaymentSheet = async () => {
-        const {error} = await presentPaymentSheet();
-
-        if (error) {
-            Alert.alert("エラー", "支払い方法の設定中にエラーが発生しました");
-            return false
-        } else {
-            return true
-        }
-    };
 
     useEffect(() => {
         async function launchDialog() {
@@ -79,11 +46,15 @@ export default function SetupPayment() {
             const resJson = await res.json()
             if (resJson.count == 0) {
                 setVisible(true)
-                initializePaymentSheet().then(() => setLoading(false));
+                initializePaymentSheet(setLoading, initPaymentSheet).then(() => setLoading(false));
             }
         }
 
-        launchDialog().then()
+        getLocalData("paymentProvider").then((provider: PaymentProvider) => {
+            if (provider == 'stripe') {
+                launchDialog().then()
+            }
+        });
     }, []);
 
     return (
@@ -100,8 +71,18 @@ export default function SetupPayment() {
                             <ActivityIndicator size={"large"}/>
                         ) : (
                             <>
-                                <Text>ご利用になる前に、支払手段の設定が必要です。</Text>
-                                <Text>ご利用のカードを登録してください</Text>
+                                <Text>デポジットのお支払手段を設定してください</Text>
+                                <Text
+                                    style={{marginBottom: 10}}>クレジットカードの場合、お支払いがよりスムーズになります。</Text>
+                                <RadioButton.Group
+                                    onValueChange={value => setSelectedPaymentProvider(value as PaymentProvider)}
+                                    value={selectedPaymentProvider}
+                                >
+                                    <RadioButton.Item style={{flexDirection: "row-reverse"}} mode={"android"}
+                                                      label="クレジットカード" value="stripe"/>
+                                    <RadioButton.Item style={{flexDirection: "row-reverse"}} mode={"android"}
+                                                      label="PayPay" value="paypay"/>
+                                </RadioButton.Group>
                             </>
                         )}
                     </Dialog.Content>
@@ -117,12 +98,21 @@ export default function SetupPayment() {
                     <Dialog.Content>
                         {loading ? (
                             <ActivityIndicator size={"large"}/>
-                        ) : (
-                            <>
-                                <Text>お支払い方法の設定が完了しました</Text>
-                                <Text>今後はこのカードで決済・返金が行われます</Text>
-                            </>
-                        )}
+                        ) : selectedPaymentProvider == "stripe" ?
+                            (
+                                <>
+                                    <Text>お支払い方法の設定が完了しました</Text>
+                                    <Text>今後はこのカードで決済・返金が行われます</Text>
+                                </>
+                            ) :
+                            (
+                                <>
+                                    <Text>お支払い方法がPayPayに設定されました</Text>
+                                    <Text>都度PayPayアプリから決済を行ってください</Text>
+                                    <Text>決済方法は設定からいつでも変更できます</Text>
+                                </>
+                            )
+                        }
                     </Dialog.Content>
                     <Dialog.Actions>
                         <Button disabled={loading} onPress={() => setSuccessDialogVisible(false)}>完了</Button>

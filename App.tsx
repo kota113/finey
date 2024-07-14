@@ -17,6 +17,9 @@ import storage from '@react-native-firebase/storage';
 import materialTheme from "./materialTheme";
 import * as Sentry from "@sentry/react-native";
 import PaymentHistory from "./screens/PaymentHistory";
+import ConfigurePayment from "./screens/ConfigurePayment";
+import {getLocalData, storeLocalData} from "./utils/localStorage";
+import {PaymentProvider} from "./types";
 
 const Stack = createNativeStackNavigator();
 
@@ -73,12 +76,22 @@ const StackNavigator = () => {
         })
         setGoogleSignInConfigured(true)
     }
+    // set payment provider to stripe if not set
+    getLocalData("paymentProvider").then((provider: PaymentProvider | null) => {
+        if (!provider) {
+            console.log("Payment provider not set")
+            storeLocalData("paymentProvider", "stripe").then(() => {
+                console.log("Payment provider set to stripe")
+            })
+        }
+    });
     return (
         <NavigationContainer theme={GlobalTheme}>
             <Stack.Navigator initialRouteName={"AppDrawer"}>
                 <Stack.Screen name="AppDrawer" component={AppDrawer} options={{headerShown: false}}/>
                 <Stack.Screen name="Settings" component={Settings} options={{headerShown: false}}/>
                 <Stack.Screen name="EditPayment" component={EditPayment} options={{headerShown: false}}/>
+                <Stack.Screen name="ConfigurePayment" component={ConfigurePayment} options={{headerShown: false}}/>
                 <Stack.Screen name="Setup" component={Setup} options={{headerShown: false}}/>
                 <Stack.Screen name="Help" component={Setup} options={{headerShown: false}}/>
                 <Stack.Screen name="PaymentHistory" component={PaymentHistory} options={{headerShown: false}}/>
