@@ -4,6 +4,10 @@ import {storeLocalData} from "../utils/localStorage";
 import {View} from "react-native";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {StatusBar} from "expo-status-bar";
+import auth from "@react-native-firebase/auth";
+import {getDeviceId} from "react-native-device-info";
+import * as Linking from "expo-linking";
+
 
 export default ({navigation}) => {
     const [loading, setLoading] = useState(false);
@@ -11,10 +15,40 @@ export default ({navigation}) => {
     const theme = useTheme()
     const safeAreaInsets = useSafeAreaInsets();
 
-    function onSubmit() {
-        storeLocalData("paymentProvider", "paypay").then(() => {
-            console.log("PayPay setup here")
-        })
+    async function onSubmit() {
+        setLoading(true)
+        await storeLocalData("paymentProvider", "paypay");
+
+        const user = auth().currentUser;
+        const deviceId = getDeviceId();
+        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/paypay/authentication?device_id=${deviceId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${await user.getIdToken()}`
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            await Linking.openURL(data.url);
+
+            // Check firebase user custom claims periodically
+            const interval = setInterval(async () => {
+                const checkResponse = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/paypay/authentication-check`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${await user.getIdToken()}`
+                    }
+                });
+
+                const checkData = await checkResponse.json();
+                if (checkData.authorized) {
+                    clearInterval(interval);
+                    setLoading(false)
+                    setSuccessDialogVisible(true);
+                }
+            }, 5000);
+        }
     }
 
     return (
@@ -75,7 +109,7 @@ export default ({navigation}) => {
                     }}>
                         キャンセル
                     </Button>
-                    <Button mode={"contained"} loading={loading} disabled={loading} onPress={onSubmit}>
+                    <Button mode={"contained"} loading={loading} disabled={loading} onPress={() => onSubmit().then()}>
                         設定
                     </Button>
                 </View>
