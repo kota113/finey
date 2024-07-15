@@ -15,9 +15,26 @@ export default ({navigation}) => {
     const theme = useTheme()
     const safeAreaInsets = useSafeAreaInsets();
 
+    async function checkAuth() {
+        const checkResponse = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/paypay/authentication-check`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${await auth().currentUser.getIdToken()}`
+            }
+        });
+        const checkData = await checkResponse.json();
+        return checkData.authorized;
+    }
+
     async function onSubmit() {
         setLoading(true)
-        await storeLocalData("paymentProvider", "paypay");
+        const authenticated = await checkAuth();
+        if (authenticated) {
+            await storeLocalData("paymentProvider", "paypay");
+            setLoading(false)
+            setSuccessDialogVisible(true);
+            return;
+        }
 
         const user = auth().currentUser;
         const deviceId = getDeviceId();
@@ -34,15 +51,8 @@ export default ({navigation}) => {
 
             // Check firebase user custom claims periodically
             const interval = setInterval(async () => {
-                const checkResponse = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/paypay/authentication-check`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${await user.getIdToken()}`
-                    }
-                });
-
-                const checkData = await checkResponse.json();
-                if (checkData.authorized) {
+                if (await checkAuth()) {
+                    await storeLocalData("paymentProvider", "paypay");
                     clearInterval(interval);
                     setLoading(false)
                     setSuccessDialogVisible(true);
