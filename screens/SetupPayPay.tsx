@@ -5,7 +5,7 @@ import {View} from "react-native";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {StatusBar} from "expo-status-bar";
 import auth from "@react-native-firebase/auth";
-import {getDeviceId} from "react-native-device-info";
+import {getUniqueId} from "react-native-device-info";
 import * as Linking from "expo-linking";
 
 
@@ -37,7 +37,7 @@ export default ({navigation}) => {
         }
 
         const user = auth().currentUser;
-        const deviceId = getDeviceId();
+        const deviceId = getUniqueId();
         const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/paypay/authentication?device_id=${deviceId}`, {
             method: 'GET',
             headers: {
