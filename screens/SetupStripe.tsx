@@ -63,7 +63,7 @@ export default ({navigation}) => {
                 }}>
                 <Text variant={"displaySmall"} style={{marginBottom: 12}}>カード決済を設定</Text>
                 <Text
-                    variant={"bodyMedium"}>設定後も、設定からいつでもPayPay決済に戻すことが可能です。</Text>
+                    variant={"bodyMedium"}>設定からいつでもPayPay決済に戻すことが可能です。</Text>
                 <Card mode={"outlined"} style={{marginTop: 25}}>
                     <Card.Title
                         title="カード情報の保管"
