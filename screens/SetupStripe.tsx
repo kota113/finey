@@ -31,8 +31,10 @@ export default ({navigation}) => {
                 })
             })
         } else {
-            setLoading(false)
-            setSuccessDialogVisible(true)
+            setPaymentProvider("stripe").then(() => {
+                setLoading(false)
+                setSuccessDialogVisible(true)
+            })
         }
     }
 
