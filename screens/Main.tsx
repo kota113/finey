@@ -353,7 +353,7 @@ const Screen = ({navigation}) => {
             <GrantNotificationDialog/>
             <PaymentFailedDialog visible={paymentFailedModalVisible} setVisible={setPaymentFailedModalVisible}
                                  navigation={navigation}/>
-            <SetupPayment/>
+            <SetupPayment navigation={navigation}/>
             <AddTaskFAB onPress={() => setAddTaskModalVisible(true)}/>
             <AddTaskModal isVisible={addTaskModalVisible} setIsVisible={setAddTaskModalVisible} setTasks={setTasks}
                           setPaymentFailedModalVisible={setPaymentFailedModalVisible}/>
