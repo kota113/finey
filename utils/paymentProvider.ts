@@ -6,7 +6,8 @@ export async function setPaymentProvider(provider: PaymentProvider) {
     const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/user/payment-provider`, {
         method: 'POST',
         headers: {
-            "Authorization": `Bearer ${await auth().currentUser.getIdToken()}`
+            "Authorization": `Bearer ${await auth().currentUser.getIdToken()}`,
+            "Content-Type": "application/json"
         },
         body: JSON.stringify({provider: provider})
     })
