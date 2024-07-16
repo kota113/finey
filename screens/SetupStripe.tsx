@@ -21,8 +21,10 @@ export default ({navigation}) => {
             initializePaymentSheet(setLoading, initPaymentSheet).then(() => {
                 openPaymentSheet(presentPaymentSheet).then((res) => {
                     if (res === true) {
-                        setLoading(false)
-                        setSuccessDialogVisible(true)
+                        setPaymentProvider("stripe").then(() => {
+                            setLoading(false)
+                            setSuccessDialogVisible(true)
+                        })
                     } else {
                         setLoading(false)
                     }
@@ -35,9 +37,7 @@ export default ({navigation}) => {
     }
 
     function onSubmit() {
-        setPaymentProvider("stripe").then(() => {
-            launchDialog().then()
-        })
+        launchDialog().then()
     }
 
     return (
