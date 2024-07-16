@@ -1,12 +1,12 @@
 import {StripeProvider, useStripe} from "@stripe/stripe-react-native";
 import {Avatar, Button, Card, Dialog, Portal, Text, useTheme} from "react-native-paper";
 import {useState} from "react";
-import auth from "@react-native-firebase/auth";
 import {initializePaymentSheet, openPaymentSheet} from "../utils/stripePaymentSheet";
 import {View} from "react-native";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {StatusBar} from "expo-status-bar";
 import {setPaymentProvider} from "../utils/paymentProvider";
+import {getPaymentMethodsCount} from "../utils/stripe";
 
 export default ({navigation}) => {
     const [loading, setLoading] = useState(false);
@@ -17,15 +17,7 @@ export default ({navigation}) => {
 
     async function launchDialog() {
         setLoading(true)
-        const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/payment-methods-count`,
-            {
-                'method': 'GET',
-                'headers': {
-                    'Authorization': 'Bearer ' + await auth().currentUser.getIdToken()
-                }
-            })
-        const resJson = await res.json()
-        if (resJson.count == 0) {
+        if (await getPaymentMethodsCount() == 0) {
             initializePaymentSheet(setLoading, initPaymentSheet).then(() => {
                 openPaymentSheet(presentPaymentSheet).then((res) => {
                     if (res === true) {

@@ -3,6 +3,7 @@ import {useCallback, useEffect, useState} from "react";
 import {PaymentProvider} from "../../types";
 import {getPaymentProvider} from "../../utils/paymentProvider";
 import {useFocusEffect} from "@react-navigation/native";
+import {getPaymentMethodsCount} from "../../utils/stripe";
 
 
 export default function SetupPayment({navigation}) {
@@ -16,27 +17,39 @@ export default function SetupPayment({navigation}) {
         navigation.navigate("SetupStripe" ? selectedPaymentProvider === "stripe" : "SetupPayPay")
     }
 
+    async function isUserNew() {
+        const provider = await getPaymentProvider();
+        if (provider == null) {
+            return true
+        } else if (provider == "stripe") {
+            const count = await getPaymentMethodsCount();
+            if (count == 0) {
+                return true
+            }
+        }
+        return false
+    }
+
     // アプリ起動時に決済方法が未設定の場合、ダイアログを表示。newUserをtrueに
     useEffect(() => {
-        getPaymentProvider().then((provider: PaymentProvider) => {
-            if (provider == null) {
+        isUserNew().then((isNew) => {
+            if (isNew) {
                 setNewUser(true)
                 setVisible(true)
             }
-        });
+        })
     })
 
     // 新規ユーザーの場合、フォーカスが当たる度にチェック
     useFocusEffect(
         useCallback(() => {
             if (newUser) {
-                getPaymentProvider().then((provider: PaymentProvider) => {
-                    if (provider == null) {
+                isUserNew().then((isNew) => {
+                    if (!isNew) {
                         setVisible(true)
                     } else {
-                        // 新規ユーザーのpaymentProviderが設定された場合
-                        setSuccessDialogVisible(true)
                         setNewUser(false)
+                        setSuccessDialogVisible(true)
                     }
                 });
             }
