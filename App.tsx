@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
-import * as React from 'react';
 import {AppRegistry} from 'react-native';
+import {useState} from "react";
 import {MD3LightTheme as DefaultTheme, PaperProvider} from 'react-native-paper';
 import config from './app.config';
 import AppDrawer from './screens/DrawerNavigation';
@@ -20,6 +20,7 @@ import PaymentHistory from "./screens/PaymentHistory";
 import SetupStripe from "./screens/SetupStripe";
 import SetupPayPay from "./screens/SetupPayPay";
 import {getPaymentProvider, setPaymentProvider} from "./utils/paymentProvider";
+
 
 const Stack = createNativeStackNavigator();
 
@@ -51,7 +52,7 @@ Sentry.init({
 
 const StackNavigator = () => {
     // set true if firebase is not initialized
-    const [googleSignInConfigured, setGoogleSignInConfigured] = React.useState(false);
+    const [googleSignInConfigured, setGoogleSignInConfigured] = useState(false);
     if (!firebase.app) {
         firebase.initializeApp({
             // apiKey: process.env.FIREBASE_API_KEY,
