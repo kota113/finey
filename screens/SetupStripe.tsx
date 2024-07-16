@@ -3,10 +3,10 @@ import {Avatar, Button, Card, Dialog, Portal, Text, useTheme} from "react-native
 import {useState} from "react";
 import auth from "@react-native-firebase/auth";
 import {initializePaymentSheet, openPaymentSheet} from "../utils/stripePaymentSheet";
-import {storeLocalData} from "../utils/localStorage";
 import {View} from "react-native";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {StatusBar} from "expo-status-bar";
+import {setPaymentProvider} from "../utils/paymentProvider";
 
 export default ({navigation}) => {
     const [loading, setLoading] = useState(false);
@@ -43,7 +43,7 @@ export default ({navigation}) => {
     }
 
     function onSubmit() {
-        storeLocalData("paymentProvider", "stripe").then(() => {
+        setPaymentProvider("stripe").then(() => {
             launchDialog().then()
         })
     }

@@ -2,9 +2,9 @@ import {ActivityIndicator, Button, Dialog, Portal, RadioButton, Text} from "reac
 import {useEffect, useState} from "react";
 import {StripeProvider, useStripe} from "@stripe/stripe-react-native";
 import auth from "@react-native-firebase/auth";
-import {getLocalData, storeLocalData} from "../../utils/localStorage";
 import {PaymentProvider} from "../../types";
 import {initializePaymentSheet, openPaymentSheet} from "../../utils/stripePaymentSheet";
+import {getPaymentProvider, setPaymentProvider} from "../../utils/paymentProvider";
 
 
 export default function SetupPayment() {
@@ -19,14 +19,14 @@ export default function SetupPayment() {
             if (selectedPaymentProvider === "stripe") {
                 openPaymentSheet(presentPaymentSheet).then((res) => {
                     if (res === true) {
-                        storeLocalData("paymentProvider", "stripe").then(() => {
+                        setPaymentProvider("stripe").then(() => {
                             setVisible(false);
                             setSuccessDialogVisible(true);
                         })
                     }
                 })
             } else {
-                storeLocalData("paymentProvider", "paypay").then(() => {
+                setPaymentProvider("paypay").then(() => {
                     setVisible(false);
                     setSuccessDialogVisible(true);
                 })
@@ -50,7 +50,7 @@ export default function SetupPayment() {
             }
         }
 
-        getLocalData("paymentProvider").then((provider: PaymentProvider) => {
+        getPaymentProvider().then((provider: PaymentProvider) => {
             if (provider == 'stripe') {
                 launchDialog().then()
             }

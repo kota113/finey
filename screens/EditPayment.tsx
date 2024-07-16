@@ -3,8 +3,8 @@ import * as WebBrowser from "expo-web-browser";
 import {useEffect} from "react";
 import {ActivityIndicator} from "react-native-paper";
 import {PaymentProvider} from "../types";
-import {getLocalData} from "../utils/localStorage";
 import * as Linking from "expo-linking";
+import {getPaymentProvider} from "../utils/paymentProvider";
 
 function openCustomerPortal(callback: () => void) {
     const user = firebase.auth().currentUser
@@ -22,7 +22,7 @@ function openCustomerPortal(callback: () => void) {
 
 export default function ({navigation}) {
     useEffect(() => {
-        getLocalData("paymentProvider").then((provider: PaymentProvider) => {
+        getPaymentProvider().then((provider: PaymentProvider) => {
             if (provider === "stripe") {
                 openCustomerPortal(() => navigation.goBack())
             } else {

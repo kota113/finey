@@ -1,11 +1,11 @@
 import {Avatar, Button, Card, Dialog, Portal, Text, useTheme} from "react-native-paper";
 import {useState} from "react";
-import {storeLocalData} from "../utils/localStorage";
 import {View} from "react-native";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {StatusBar} from "expo-status-bar";
 import auth from "@react-native-firebase/auth";
 import * as Linking from "expo-linking";
+import {setPaymentProvider} from "../utils/paymentProvider";
 
 
 export default ({navigation}) => {
@@ -29,10 +29,11 @@ export default ({navigation}) => {
         setLoading(true)
         const authenticated = await checkAuth();
         if (authenticated) {
-            await storeLocalData("paymentProvider", "paypay");
-            setLoading(false)
-            setSuccessDialogVisible(true);
-            return;
+            setPaymentProvider("paypay").then(() => {
+                setLoading(false)
+                setSuccessDialogVisible(true);
+            })
+            return
         }
 
         const user = auth().currentUser;
@@ -50,7 +51,7 @@ export default ({navigation}) => {
             // Check firebase user custom claims periodically
             const interval = setInterval(async () => {
                 if (await checkAuth()) {
-                    await storeLocalData("paymentProvider", "paypay");
+                    await setPaymentProvider("paypay");
                     clearInterval(interval);
                     setLoading(false)
                     setSuccessDialogVisible(true);

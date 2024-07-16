@@ -1,11 +1,11 @@
 import {FlatList, View} from "react-native";
-import {Appbar, Button, Dialog, List, Portal, Snackbar, Text, useTheme} from "react-native-paper";
+import {ActivityIndicator, Appbar, Button, Dialog, List, Portal, Snackbar, Text, useTheme} from "react-native-paper";
 import * as Linking from "expo-linking";
 import appConfig from "../app.config";
 import {useCallback, useState} from "react";
 import {PaymentProvider} from "../types";
-import {getLocalData} from "../utils/localStorage";
 import {useFocusEffect} from "@react-navigation/native";
+import {getPaymentProvider} from "../utils/paymentProvider";
 
 
 interface SettingsItem {
@@ -37,33 +37,39 @@ const PaymentProviderDialog = ({
         <Dialog visible={visible} onDismiss={() => setVisible(false)}>
             <Dialog.Title>決済方法</Dialog.Title>
             <Dialog.Content>
-                <List.Item
-                    rippleColor={theme.colors.primary}
-                    style={{
-                        backgroundColor: selected === "stripe" ? selectedBackgroundColor : "transparent",
-                        borderRadius: 15
-                    }}
-                    contentStyle={{borderRadius: 15}}
-                    title="クレジットカード"
-                    description="クレジットカードを登録して、決済をスムーズに行います。"
-                    left={props => <List.Icon {...props} icon="credit-card-outline"/>}
-                    onPress={() => {
-                        setSelected("stripe")
-                    }}
-                />
-                <List.Item
-                    rippleColor={theme.colors.primary}
-                    style={{
-                        backgroundColor: selected === "paypay" ? selectedBackgroundColor : "transparent",
-                        borderRadius: 15
-                    }}
-                    title="PayPay"
-                    description="PayPayアカウントの残高から決済を行います。"
-                    left={props => <List.Icon {...props} icon="cellphone"/>}
-                    onPress={() => {
-                        setSelected("paypay");
-                    }}
-                />
+                {selected ?
+                    <>
+                        <List.Item
+                            rippleColor={theme.colors.primary}
+                            style={{
+                                backgroundColor: selected === "stripe" ? selectedBackgroundColor : "transparent",
+                                borderRadius: 15
+                            }}
+                            contentStyle={{borderRadius: 15}}
+                            title="クレジットカード"
+                            description="クレジットカードを登録して、決済をスムーズに行います。"
+                            left={props => <List.Icon {...props} icon="credit-card-outline"/>}
+                            onPress={() => {
+                                setSelected("stripe")
+                            }}
+                        />
+                        <List.Item
+                            rippleColor={theme.colors.primary}
+                            style={{
+                                backgroundColor: selected === "paypay" ? selectedBackgroundColor : "transparent",
+                                borderRadius: 15
+                            }}
+                            title="PayPay"
+                            description="PayPayアカウントの残高から決済を行います。"
+                            left={props => <List.Icon {...props} icon="cellphone"/>}
+                            onPress={() => {
+                                setSelected("paypay");
+                            }}
+                        />
+                    </>
+                    :
+                    <ActivityIndicator/>
+                }
             </Dialog.Content>
             <Dialog.Actions>
                 <Button onPress={() => setVisible(false)}>閉じる</Button>
@@ -78,12 +84,16 @@ const Settings = ({navigation}: { navigation: any }) => {
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const [paymentDialogVisible, setPaymentDialogVisible] = useState(false);
     const [selectedPaymentProvider, setSelectedPaymentProvider] = useState<PaymentProvider>(undefined);
+    const [storedPaymentProvider, setStoredPaymentProvider] = useState<PaymentProvider>(undefined);
     const theme = useTheme()
 
     useFocusEffect(
         useCallback(() => {
-            getLocalData("paymentProvider").then((provider: PaymentProvider) => {
+            setSelectedPaymentProvider(undefined)
+            setStoredPaymentProvider(undefined)
+            getPaymentProvider().then((provider: PaymentProvider) => {
                 setSelectedPaymentProvider(provider)
+                setStoredPaymentProvider(provider)
             })
             return () => {
             };
@@ -92,13 +102,11 @@ const Settings = ({navigation}: { navigation: any }) => {
 
     function onSubmitPaymentProvider() {
         setPaymentDialogVisible(false)
-        getLocalData("paymentProvider").then((provider: PaymentProvider) => {
-            if (selectedPaymentProvider === "stripe" && provider === "paypay") {
-                navigation.navigate("SetupStripe")
-            } else if (selectedPaymentProvider === "paypay" && provider === "stripe") {
-                navigation.navigate("SetupPayPay")
-            }
-        })
+        if (selectedPaymentProvider === "stripe" && storedPaymentProvider === "paypay") {
+            navigation.navigate("SetupStripe")
+        } else if (selectedPaymentProvider === "paypay" && storedPaymentProvider === "stripe") {
+            navigation.navigate("SetupPayPay")
+        }
     }
 
     const settings: SettingsItem[] = [
