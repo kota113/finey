@@ -1,6 +1,5 @@
-import {ActivityIndicator, Button, Dialog, Portal, RadioButton, Text} from "react-native-paper";
+import {Button, Dialog, Portal, RadioButton, Text} from "react-native-paper";
 import {useCallback, useEffect, useState} from "react";
-import {StripeProvider} from "@stripe/stripe-react-native";
 import {PaymentProvider} from "../../types";
 import {getPaymentProvider} from "../../utils/paymentProvider";
 import {useFocusEffect} from "@react-navigation/native";
@@ -8,16 +7,13 @@ import {useFocusEffect} from "@react-navigation/native";
 
 export default function SetupPayment({navigation}) {
     const [visible, setVisible] = useState(false);
-    const [loading, setLoading] = useState(true);
     const [successDialogVisible, setSuccessDialogVisible] = useState(false);
     const [selectedPaymentProvider, setSelectedPaymentProvider] = useState<PaymentProvider>("stripe");
     const [newUser, setNewUser] = useState(false);
 
     function onSubmit() {
-        if (!loading) {
-            setVisible(false)
-            navigation.navigate("SetupStripe" ? selectedPaymentProvider === "stripe" : "SetupPayPay")
-        }
+        setVisible(false)
+        navigation.navigate("SetupStripe" ? selectedPaymentProvider === "stripe" : "SetupPayPay")
     }
 
     // アプリ起動時に決済方法が未設定の場合、ダイアログを表示。newUserをtrueに
@@ -38,6 +34,8 @@ export default function SetupPayment({navigation}) {
                     if (provider == null) {
                         setVisible(true)
                     } else {
+                        // 新規ユーザーのpaymentProviderが設定された場合
+                        setSuccessDialogVisible(true)
                         setNewUser(false)
                     }
                 });
@@ -48,37 +46,28 @@ export default function SetupPayment({navigation}) {
     );
 
     return (
-        <StripeProvider
-            publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE}
-            // merchantIdentifier="merchant.com.finey" // required for Apple Pay
-        >
+        <>
             <Portal>
                 <Dialog visible={visible} dismissableBackButton={false} dismissable={false}>
                     <Dialog.Icon icon={"credit-card"} size={30}/>
                     <Dialog.Title style={{textAlign: "center"}}>支払い方法の設定</Dialog.Title>
                     <Dialog.Content>
-                        {loading ? (
-                            <ActivityIndicator size={"large"}/>
-                        ) : (
-                            <>
-                                <Text>デポジットのお支払手段を設定してください</Text>
-                                <Text
-                                    style={{marginBottom: 10}}>デポジットはタスク設定時に決済され、完了したら払い戻されます。
-                                </Text>
-                                <RadioButton.Group
-                                    onValueChange={value => setSelectedPaymentProvider(value as PaymentProvider)}
-                                    value={selectedPaymentProvider}
-                                >
-                                    <RadioButton.Item style={{flexDirection: "row-reverse"}} mode={"android"}
-                                                      label="クレジットカード" value="stripe"/>
-                                    <RadioButton.Item style={{flexDirection: "row-reverse"}} mode={"android"}
-                                                      label="PayPay" value="paypay"/>
-                                </RadioButton.Group>
-                            </>
-                        )}
+                        <Text>デポジットのお支払手段を設定してください</Text>
+                        <Text
+                            style={{marginBottom: 10}}>デポジットはタスク設定時に決済され、完了したら払い戻されます。
+                        </Text>
+                        <RadioButton.Group
+                            onValueChange={value => setSelectedPaymentProvider(value as PaymentProvider)}
+                            value={selectedPaymentProvider}
+                        >
+                            <RadioButton.Item style={{flexDirection: "row-reverse"}} mode={"android"}
+                                              label="クレジットカード" value="stripe"/>
+                            <RadioButton.Item style={{flexDirection: "row-reverse"}} mode={"android"}
+                                              label="PayPay" value="paypay"/>
+                        </RadioButton.Group>
                     </Dialog.Content>
                     <Dialog.Actions>
-                        <Button disabled={loading} onPress={onSubmit}>次へ</Button>
+                        <Button onPress={onSubmit}>次へ</Button>
                     </Dialog.Actions>
                 </Dialog>
             </Portal>
@@ -87,29 +76,26 @@ export default function SetupPayment({navigation}) {
                     <Dialog.Icon icon={"check"} size={30}/>
                     <Dialog.Title style={{textAlign: "center"}}>完了しました</Dialog.Title>
                     <Dialog.Content>
-                        {loading ? (
-                            <ActivityIndicator size={"large"}/>
-                        ) : selectedPaymentProvider == "stripe" ?
+                        {selectedPaymentProvider == "stripe" ?
                             (
                                 <>
-                                    <Text>お支払い方法の設定が完了しました</Text>
-                                    <Text>今後はこのカードで決済・返金が行われます</Text>
+                                    <Text>お支払い方法がカードに設定されました</Text>
+                                    <Text>決済方法は設定からいつでも変更できます</Text>
                                 </>
                             ) :
                             (
                                 <>
                                     <Text>お支払い方法がPayPayに設定されました</Text>
-                                    <Text>都度PayPayアプリから決済を行ってください</Text>
                                     <Text>決済方法は設定からいつでも変更できます</Text>
                                 </>
                             )
                         }
                     </Dialog.Content>
                     <Dialog.Actions>
-                        <Button disabled={loading} onPress={() => setSuccessDialogVisible(false)}>完了</Button>
+                        <Button onPress={() => setSuccessDialogVisible(false)}>完了</Button>
                     </Dialog.Actions>
                 </Dialog>
             </Portal>
-        </StripeProvider>
+        </>
     );
 }

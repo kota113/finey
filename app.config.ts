@@ -23,6 +23,9 @@ export default {
             bundleIdentifier: "com.kota113.Finey",
             googleServicesFile: process.env.GOOGLE_SERVICE_INFO_PLIST || googleServiceInfoPlist,
             buildNumber: versionString,
+            associatedDomains: [
+                "applinks:finey.kota113.com"
+            ]
         },
         android: {
             adaptiveIcon: {
@@ -36,7 +39,21 @@ export default {
             permissions: [
                 'android.permission.SCHEDULE_EXACT_ALARM'
             ],
-            versionCode: 5
+            versionCode: 5,
+            intentFilters: [
+                {
+                    action: "VIEW",
+                    autoVerify: true,
+                    data: [
+                        {
+                            scheme: "https",
+                            host: "finey.kota113.com",
+                            pathPrefix: "/app"
+                        }
+                    ],
+                    category: ["BROWSABLE", "DEFAULT"]
+                }
+            ]
         },
         extra: {
             eas: {
