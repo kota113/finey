@@ -1,16 +1,13 @@
 import {ActivityIndicator, Button, Dialog, Portal, RadioButton, Text} from "react-native-paper";
 import {useCallback, useEffect, useState} from "react";
-import {StripeProvider, useStripe} from "@stripe/stripe-react-native";
-import auth from "@react-native-firebase/auth";
+import {StripeProvider} from "@stripe/stripe-react-native";
 import {PaymentProvider} from "../../types";
-import {initializePaymentSheet} from "../../utils/stripePaymentSheet";
 import {getPaymentProvider} from "../../utils/paymentProvider";
 import {useFocusEffect} from "@react-navigation/native";
 
 
 export default function SetupPayment({navigation}) {
     const [visible, setVisible] = useState(false);
-    const {initPaymentSheet, presentPaymentSheet} = useStripe();
     const [loading, setLoading] = useState(true);
     const [successDialogVisible, setSuccessDialogVisible] = useState(false);
     const [selectedPaymentProvider, setSelectedPaymentProvider] = useState<PaymentProvider>("stripe");
@@ -23,27 +20,12 @@ export default function SetupPayment({navigation}) {
         }
     }
 
-    async function launchDialog() {
-        const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/payment-methods-count`,
-            {
-                'method': 'GET',
-                'headers': {
-                    'Authorization': 'Bearer ' + await auth().currentUser.getIdToken()
-                }
-            })
-        const resJson = await res.json()
-        if (resJson.count == 0) {
-            setVisible(true)
-            initializePaymentSheet(setLoading, initPaymentSheet).then(() => setLoading(false));
-        }
-    }
-
     // アプリ起動時に決済方法が未設定の場合、ダイアログを表示。newUserをtrueに
     useEffect(() => {
         getPaymentProvider().then((provider: PaymentProvider) => {
             if (provider == null) {
                 setNewUser(true)
-                launchDialog().then()
+                setVisible(true)
             }
         });
     })
@@ -54,7 +36,7 @@ export default function SetupPayment({navigation}) {
             if (newUser) {
                 getPaymentProvider().then((provider: PaymentProvider) => {
                     if (provider == null) {
-                        launchDialog().then()
+                        setVisible(true)
                     } else {
                         setNewUser(false)
                     }
