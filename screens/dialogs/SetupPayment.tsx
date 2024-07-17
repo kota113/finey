@@ -1,16 +1,11 @@
-import {Button, Dialog, Portal, RadioButton, Text} from "react-native-paper";
-import {useCallback, useEffect, useState} from "react";
+import {Button, Dialog, List, Portal, Text, useTheme} from "react-native-paper";
+import {useState} from "react";
 import {PaymentProvider} from "../../types";
-import {getPaymentProvider} from "../../utils/paymentProvider";
-import {useFocusEffect} from "@react-navigation/native";
-import {getPaymentMethodsCount} from "../../utils/stripe";
 
 
-export default function SetupPayment({navigation}) {
-    const [visible, setVisible] = useState(false);
+export default function SetupPayment({navigation, visible, setVisible}) {
     const [successDialogVisible, setSuccessDialogVisible] = useState(false);
-    const [selectedPaymentProvider, setSelectedPaymentProvider] = useState<PaymentProvider>("stripe");
-    const [newUser, setNewUser] = useState(false);
+    const [selectedPaymentProvider, setSelectedPaymentProvider] = useState<PaymentProvider>("paypay");
 
     function onSubmit() {
         setVisible(false)
@@ -18,67 +13,47 @@ export default function SetupPayment({navigation}) {
         navigation.navigate(screenToNavigate);
     }
 
-    async function isUserNew() {
-        const provider = await getPaymentProvider();
-        if (provider == null) {
-            return true
-        } else if (provider == "stripe") {
-            const count = await getPaymentMethodsCount();
-            if (count == 0) {
-                return true
-            }
-        }
-        return false
-    }
-
-    // アプリ起動時に決済方法が未設定の場合、ダイアログを表示。newUserをtrueに
-    useEffect(() => {
-        isUserNew().then((isNew) => {
-            if (isNew) {
-                setNewUser(true)
-                setVisible(true)
-            }
-        })
-    })
-
-    // 新規ユーザーの場合、フォーカスが当たる度にチェック
-    useFocusEffect(
-        useCallback(() => {
-            if (newUser) {
-                isUserNew().then((isNew) => {
-                    if (!isNew) {
-                        setVisible(true)
-                    } else {
-                        setNewUser(false)
-                        setSuccessDialogVisible(true)
-                    }
-                });
-            }
-            return () => {
-            };
-        }, [])
-    );
+    const theme = useTheme()
+    const selectedBackgroundColor = "rgba(0,108,83,0.25)"
 
     return (
         <>
             <Portal>
                 <Dialog visible={visible} dismissableBackButton={false} dismissable={false}>
                     <Dialog.Icon icon={"credit-card"} size={30}/>
-                    <Dialog.Title style={{textAlign: "center"}}>支払い方法の設定</Dialog.Title>
+                    <Dialog.Title style={{textAlign: "center"}}>お支払い方法</Dialog.Title>
                     <Dialog.Content>
                         <Text>デポジットのお支払手段を設定してください</Text>
                         <Text
-                            style={{marginBottom: 10}}>デポジットはタスク設定時に決済され、完了したら払い戻されます。
+                            style={{marginBottom: 10}}>タスク設定時に決済され、完了したら払い戻されます
                         </Text>
-                        <RadioButton.Group
-                            onValueChange={value => setSelectedPaymentProvider(value as PaymentProvider)}
-                            value={selectedPaymentProvider}
-                        >
-                            <RadioButton.Item style={{flexDirection: "row-reverse"}} mode={"android"}
-                                              label="クレジットカード" value="stripe"/>
-                            <RadioButton.Item style={{flexDirection: "row-reverse"}} mode={"android"}
-                                              label="PayPay" value="paypay"/>
-                        </RadioButton.Group>
+                        <List.Item
+                            rippleColor={theme.colors.primary}
+                            style={{
+                                backgroundColor: selectedPaymentProvider === "paypay" ? selectedBackgroundColor : "transparent",
+                                borderRadius: 15
+                            }}
+                            title="PayPay"
+                            description="PayPayアカウントの残高から決済を行います"
+                            left={props => <List.Icon {...props} icon="cellphone"/>}
+                            onPress={() => {
+                                setSelectedPaymentProvider("paypay");
+                            }}
+                        />
+                        <List.Item
+                            rippleColor={theme.colors.primary}
+                            style={{
+                                backgroundColor: selectedPaymentProvider === "stripe" ? selectedBackgroundColor : "transparent",
+                                borderRadius: 15
+                            }}
+                            contentStyle={{borderRadius: 15}}
+                            title="クレジットカード"
+                            description="登録するクレジットカードから決済を行います"
+                            left={props => <List.Icon {...props} icon="credit-card-outline"/>}
+                            onPress={() => {
+                                setSelectedPaymentProvider("stripe")
+                            }}
+                        />
                     </Dialog.Content>
                     <Dialog.Actions>
                         <Button onPress={onSubmit}>次へ</Button>

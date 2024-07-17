@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {Alert, RefreshControl, ScrollView, StyleSheet, View} from "react-native";
 import {ActivityIndicator, Appbar, Chip, FAB, IconButton, List, Text, Tooltip, useTheme} from "react-native-paper";
 import {getTasks, storeTasks} from "../utils/localStorage";
@@ -13,6 +13,9 @@ import SetupPayment from "./dialogs/SetupPayment";
 import AddTaskModal from "./dialogs/AddTaskModal";
 import ConfirmTaskDeletion from "./dialogs/ConfirmTaskDeletion";
 import {markTaskCompleteRequest, refundTaskRequest} from "../utils/apiRequest";
+import {useFocusEffect} from "@react-navigation/native";
+import {getPaymentProvider} from "../utils/paymentProvider";
+import {getPaymentMethodsCount} from "../utils/stripe";
 
 
 const TopAppBar = ({navigation}) => (
@@ -242,6 +245,8 @@ const AddTaskFAB = ({onPress}) => (
 
 
 const Screen = ({navigation}) => {
+    const [setupDialogVisible, setSetUpDialogVisible] = useState<boolean>(false);
+    const [newUser, setNewUser] = useState<boolean>(false);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loadingTasks, setLoadingTasks] = useState<boolean>(true)
     const [submitProofModalVisible, setSubmitProofModalVisible] = useState<boolean>(false);
@@ -251,13 +256,49 @@ const Screen = ({navigation}) => {
     const [taskToDelete, setTaskToDelete] = useState<Task>();
     const theme = useTheme();
 
+    async function isUserNew() {
+        const provider = await getPaymentProvider();
+        if (provider == null) {
+            return true
+        } else if (provider == "stripe") {
+            const count = await getPaymentMethodsCount();
+            if (count == 0) {
+                return true
+            }
+        }
+        return false
+    }
+
+    // 新規ユーザーの場合、フォーカスが当たる度にチェック
+    useFocusEffect(
+        useCallback(() => {
+            if (newUser) {
+                isUserNew().then((isNew) => {
+                    if (isNew) {
+                        setSetUpDialogVisible(true)
+                    } else {
+                        setNewUser(false)
+                        setSetUpDialogVisible(false)
+                    }
+                });
+            }
+            return () => {
+            };
+        }, [])
+    );
+
     useEffect(() => {
+        isUserNew().then((isNew) => {
+            if (isNew) {
+                setNewUser(true)
+                setSetUpDialogVisible(true)
+            }
+        });
         async function fetchTask() {
             const data = await getTasks();
             setTasks(data);
             setLoadingTasks(false);
         }
-
         fetchTask().then()
     }, []);
 
@@ -353,7 +394,7 @@ const Screen = ({navigation}) => {
             <GrantNotificationDialog/>
             <PaymentFailedDialog visible={paymentFailedModalVisible} setVisible={setPaymentFailedModalVisible}
                                  navigation={navigation}/>
-            <SetupPayment navigation={navigation}/>
+            <SetupPayment navigation={navigation} visible={setupDialogVisible} setVisible={setSetUpDialogVisible}/>
             <AddTaskFAB onPress={() => setAddTaskModalVisible(true)}/>
             <AddTaskModal isVisible={addTaskModalVisible} setIsVisible={setAddTaskModalVisible} setTasks={setTasks}
                           setPaymentFailedModalVisible={setPaymentFailedModalVisible}/>
