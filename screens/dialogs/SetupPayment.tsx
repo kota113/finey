@@ -14,7 +14,8 @@ export default function SetupPayment({navigation}) {
 
     function onSubmit() {
         setVisible(false)
-        navigation.navigate("SetupStripe" ? selectedPaymentProvider === "stripe" : "SetupPayPay")
+        const screenToNavigate = selectedPaymentProvider === "stripe" ? "SetupStripe" : "SetupPayPay";
+        navigation.navigate(screenToNavigate);
     }
 
     async function isUserNew() {
