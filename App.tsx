@@ -19,7 +19,6 @@ import * as Sentry from "@sentry/react-native";
 import PaymentHistory from "./screens/PaymentHistory";
 import SetupStripe from "./screens/SetupStripe";
 import SetupPayPay from "./screens/SetupPayPay";
-import {getPaymentProvider, setPaymentProvider} from "./utils/paymentProvider";
 
 
 const Stack = createNativeStackNavigator();
@@ -77,15 +76,6 @@ const StackNavigator = () => {
         })
         setGoogleSignInConfigured(true)
     }
-    // set payment provider to stripe if not set
-    getPaymentProvider().then((provider) => {
-        if (!provider) {
-            console.log("Payment provider not set")
-            setPaymentProvider("stripe").then(() => {
-                console.log("Payment provider set to stripe")
-            })
-        }
-    });
     return (
         <NavigationContainer theme={GlobalTheme}>
             <Stack.Navigator initialRouteName={"AppDrawer"}>
