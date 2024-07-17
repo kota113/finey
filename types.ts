@@ -10,6 +10,8 @@ export interface Task {
     notificationId: string;
     notifyBefore: number;
     proofFileRef?: string;
+    paymentProvider?: PaymentProvider;
+    paymentId?: string;
 }
 
 // dueDate is stored in a Timestamp, not a Date
