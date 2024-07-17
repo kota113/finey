@@ -29,55 +29,57 @@ const PaymentProviderDialog = ({
                                    setVisible,
                                    selected,
                                    setSelected,
-                                   selectedBackgroundColor,
                                    theme,
                                    onSubmit
-                               }) => (
-    <Portal>
-        <Dialog visible={visible} onDismiss={() => setVisible(false)}>
-            <Dialog.Title>決済方法</Dialog.Title>
-            <Dialog.Content>
-                {selected ?
-                    <>
-                        <List.Item
-                            rippleColor={theme.colors.primary}
-                            style={{
-                                backgroundColor: selected === "stripe" ? selectedBackgroundColor : "transparent",
-                                borderRadius: 15
-                            }}
-                            contentStyle={{borderRadius: 15}}
-                            title="クレジットカード"
-                            description="クレジットカードを登録して、決済をスムーズに行います。"
-                            left={props => <List.Icon {...props} icon="credit-card-outline"/>}
-                            onPress={() => {
-                                setSelected("stripe")
-                            }}
-                        />
-                        <List.Item
-                            rippleColor={theme.colors.primary}
-                            style={{
-                                backgroundColor: selected === "paypay" ? selectedBackgroundColor : "transparent",
-                                borderRadius: 15
-                            }}
-                            title="PayPay"
-                            description="PayPayアカウントの残高から決済を行います。"
-                            left={props => <List.Icon {...props} icon="cellphone"/>}
-                            onPress={() => {
-                                setSelected("paypay");
-                            }}
-                        />
-                    </>
-                    :
-                    <ActivityIndicator/>
-                }
-            </Dialog.Content>
-            <Dialog.Actions>
-                <Button onPress={() => setVisible(false)}>閉じる</Button>
-                <Button onPress={onSubmit}>決定</Button>
-            </Dialog.Actions>
-        </Dialog>
-    </Portal>
-)
+                               }) => {
+    const selectedBackgroundColor = "rgba(0,108,83,0.25)"
+    return (
+        <Portal>
+            <Dialog visible={visible} onDismiss={() => setVisible(false)}>
+                <Dialog.Title>決済方法</Dialog.Title>
+                <Dialog.Content>
+                    {selected ?
+                        <>
+                            <List.Item
+                                rippleColor={theme.colors.primary}
+                                style={{
+                                    backgroundColor: selected === "paypay" ? selectedBackgroundColor : "transparent",
+                                    borderRadius: 15
+                                }}
+                                title="PayPay"
+                                description="PayPayアカウントの残高から決済を行います"
+                                left={props => <List.Icon {...props} icon="cellphone"/>}
+                                onPress={() => {
+                                    setSelected("paypay");
+                                }}
+                            />
+                            <List.Item
+                                rippleColor={theme.colors.primary}
+                                style={{
+                                    backgroundColor: selected === "stripe" ? selectedBackgroundColor : "transparent",
+                                    borderRadius: 15
+                                }}
+                                contentStyle={{borderRadius: 15}}
+                                title="クレジットカード"
+                                description="登録するクレジットカードから決済を行います"
+                                left={props => <List.Icon {...props} icon="credit-card-outline"/>}
+                                onPress={() => {
+                                    setSelected("stripe")
+                                }}
+                            />
+                        </>
+                        :
+                        <ActivityIndicator/>
+                    }
+                </Dialog.Content>
+                <Dialog.Actions>
+                    <Button onPress={() => setVisible(false)}>閉じる</Button>
+                    <Button onPress={onSubmit}>決定</Button>
+                </Dialog.Actions>
+            </Dialog>
+        </Portal>
+    )
+}
 
 
 const Settings = ({navigation}: { navigation: any }) => {
@@ -126,7 +128,6 @@ const Settings = ({navigation}: { navigation: any }) => {
             onPress: () => setSnackbarVisible(true)
         }
     ]
-    const selectedBackgroundColor = "rgba(0,108,83,0.25)"
     return (
         <>
             <FlatList
@@ -161,7 +162,6 @@ const Settings = ({navigation}: { navigation: any }) => {
                 setVisible={setPaymentDialogVisible}
                 selected={selectedPaymentProvider}
                 setSelected={setSelectedPaymentProvider}
-                selectedBackgroundColor={selectedBackgroundColor}
                 theme={theme}
                 onSubmit={onSubmitPaymentProvider}
             />
