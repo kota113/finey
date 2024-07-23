@@ -1,6 +1,6 @@
 const googleServicesJson: string = '/mnt/c/Users/iwa12/WebstormProjects/Finey/creds/google-services.json'
 const googleServiceInfoPlist: string = '/mnt/c/Users/iwa12/WebstormProjects/Finey/creds/GoogleService-Info.plist'
-const versionString: string = '1.0.3'
+const versionString: string = '1.1.0'
 
 export default {
     expo: {
