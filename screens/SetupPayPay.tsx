@@ -3,9 +3,9 @@ import {useState} from "react";
 import {View} from "react-native";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {StatusBar} from "expo-status-bar";
-import auth from "@react-native-firebase/auth";
 import * as Linking from "expo-linking";
 import {setPaymentProvider} from "../utils/paymentProvider";
+import {requestBackend} from "../utils/apiRequest";
 
 
 export default ({navigation}) => {
@@ -15,12 +15,7 @@ export default ({navigation}) => {
     const safeAreaInsets = useSafeAreaInsets();
 
     async function checkAuth() {
-        const checkResponse = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/paypay/authentication-check`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${await auth().currentUser.getIdToken()}`
-            }
-        });
+        const checkResponse = await requestBackend("/paypay/authentication-check", "GET");
         const checkData = await checkResponse.json();
         return checkData.authorized;
     }
@@ -36,13 +31,7 @@ export default ({navigation}) => {
             return
         }
 
-        const user = auth().currentUser;
-        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/paypay/authentication`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${await user.getIdToken()}`
-            }
-        });
+        const response = await requestBackend("/paypay/authentication", "GET");
 
         if (response.ok) {
             const data = await response.json();

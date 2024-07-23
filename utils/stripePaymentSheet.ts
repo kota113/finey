@@ -1,16 +1,10 @@
-import auth from "@react-native-firebase/auth";
 import {Alert} from "react-native";
 import {InitPaymentSheetResult, PresentPaymentSheetResult} from "@stripe/stripe-react-native";
 import {PresentOptions, SetupParams} from "@stripe/stripe-react-native/lib/typescript/src/types/PaymentSheet";
+import {requestBackend} from "./apiRequest";
 
 const fetchPaymentSheetParams = async () => {
-    const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/setup-payment-intent`, {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + await auth().currentUser.getIdToken(),
-            'Content-Type': 'application/json',
-        },
-    });
+    const response = await requestBackend("/setup-payment-intent", "POST");
     const {setupIntent, ephemeralKey, customer} = await response.json();
 
     return {

@@ -7,6 +7,7 @@ import {useSafeAreaInsets} from "react-native-safe-area-context";
 import LoginFailedDialog from "./dialogs/LoginFailed";
 import VerifyEmail from "./dialogs/VerifyEmail";
 import ResetPasswordDialog from "./dialogs/ResetPassword";
+import {requestBackend} from "../utils/apiRequest";
 
 const {width} = Dimensions.get('screen');
 
@@ -27,16 +28,8 @@ async function onEmailRegisterButtonPress(email: string, password: string, showV
             .then((user) => {
                 if (!user.user.emailVerified) {
                     user.user.sendEmailVerification().then(() => {
-                        user.user.getIdToken().then(token => {
-                            fetch(`${process.env.EXPO_PUBLIC_API_URL}/register`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': 'Bearer ' + token
-                                }
-                            }).then(() => {
-                                showVerifyDialog()
-                            })
+                        requestBackend("/register", "POST").then(() => {
+                            showVerifyDialog()
                         })
                     })
                 }

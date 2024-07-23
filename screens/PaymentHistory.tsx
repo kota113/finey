@@ -1,7 +1,7 @@
 import {Alert, Animated, LayoutAnimation, Platform, SectionList, StyleSheet, UIManager, View} from "react-native";
 import {ActivityIndicator, Appbar, Chip, Icon, Text, useTheme} from "react-native-paper";
 import React, {useEffect, useRef, useState} from "react";
-import auth from "@react-native-firebase/auth";
+import {requestBackend} from "../utils/apiRequest";
 
 // Enable Layout Animation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -120,15 +120,7 @@ const HistoryContainer = ({navigation}) => {
 
     useEffect(() => {
         async function fetchData() {
-            const data = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/payments-history`,
-                {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${await auth().currentUser.getIdToken()}`
-                    }
-                }
-            )
+            const data = await requestBackend("/payments-history", "GET");
             if (!data.ok) {
                 console.error("Failed to fetch payments history");
                 Alert.alert("エラー", "決済履歴の取得に失敗しました。");

@@ -7,10 +7,10 @@ import {Task} from "../../types";
 import uuid from "react-native-uuid";
 import ModalHeader from "./AddTask/ModalHeader";
 import ModalContents from "./AddTask/ModalContents";
-import auth from "@react-native-firebase/auth";
 import {getTasks, storeTasks} from "../../utils/localStorage";
 import * as Notifications from "expo-notifications";
 import SetDepositModal from "./SetDeposit";
+import {requestBackend} from "../../utils/apiRequest";
 
 
 async function addTask(
@@ -19,15 +19,7 @@ async function addTask(
     setPaymentFailedModalVisible: React.Dispatch<React.SetStateAction<boolean>>
 ): Promise<boolean> {
     async function requestAPI() {
-        const token = await auth().currentUser.getIdToken();
-        const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/add-task`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: "Bearer " + token,
-            },
-            body: JSON.stringify({id: task.id}),
-        });
+        const res = await requestBackend("/add-task", "POST", {id: task.id});
         return res.ok;
     }
 

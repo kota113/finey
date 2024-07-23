@@ -1,13 +1,7 @@
-import auth from "@react-native-firebase/auth";
+import {requestBackend} from "./apiRequest";
 
 export async function getPaymentMethodsCount() {
-    const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/payment-methods-count`,
-        {
-            'method': 'GET',
-            'headers': {
-                'Authorization': 'Bearer ' + await auth().currentUser.getIdToken()
-            }
-        })
+    const res = await requestBackend("/payment-methods-count", "GET");
     const resJson = await res.json()
     return resJson.count
 }

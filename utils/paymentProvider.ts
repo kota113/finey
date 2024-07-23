@@ -1,16 +1,9 @@
 import {PaymentProvider} from "../types";
-import auth from "@react-native-firebase/auth";
 import {Alert} from "react-native";
+import {requestBackend} from "./apiRequest";
 
 export async function setPaymentProvider(provider: PaymentProvider) {
-    const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/user/payment-provider`, {
-        method: 'POST',
-        headers: {
-            "Authorization": `Bearer ${await auth().currentUser.getIdToken()}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({provider: provider})
-    })
+    const res = await requestBackend("/user/payment-provider", "POST", {provider: provider})
     if (!res.ok) {
         Alert.alert("エラー", "エラーが発生しました。もう一度お試しください。")
         throw new Error("Error setting payment provider.")
@@ -19,12 +12,7 @@ export async function setPaymentProvider(provider: PaymentProvider) {
 }
 
 export async function getPaymentProvider() {
-    const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/user/payment-provider`, {
-        method: 'GET',
-        headers: {
-            "Authorization": `Bearer ${await auth().currentUser.getIdToken()}`
-        }
-    })
+    const res = await requestBackend("/user/payment-provider", "GET")
     if (!res.ok) {
         throw new Error("Error getting payment provider.")
     }
